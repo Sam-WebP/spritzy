@@ -33,3 +33,18 @@ export function parsePatternString(patternString: string) {
     })
     .sort((a, b) => a.maxLength - b.maxLength);
 }
+
+export function hexToRgba(hex: string, opacity: number): string {
+  // Normalize hex value
+  let normalizedHex = hex.replace('#', '');
+  if (normalizedHex.length === 3) {
+    normalizedHex = normalizedHex.split('').map(c => c + c).join('');
+  }
+  
+  // Parse values
+  const r = parseInt(normalizedHex.slice(0, 2), 16);
+  const g = parseInt(normalizedHex.slice(2, 4), 16);
+  const b = parseInt(normalizedHex.slice(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}

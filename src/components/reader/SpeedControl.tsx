@@ -18,6 +18,7 @@ export default function SpeedControl({ wpm, onWpmChange, theme }: SpeedControlPr
       label={`Reading Speed: ${wpm} WPM`}
       textColor={theme.text}
       showMinMax={true}
+      accentColor={theme.highlightText}
     />
   );
 }

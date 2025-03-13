@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { ReaderSettings, ColorTheme, HighlightPattern } from '@/types';
 import { COLOR_THEMES, FONT_OPTIONS, DEFAULT_HIGHLIGHT_PATTERN } from '@/utils/constants';
-import { parsePatternString } from '@/utils/color-utils';
-import { getContrastColor } from '@/utils/color-utils';
+import { parsePatternString, getContrastColor, hexToRgba } from '@/utils/color-utils';
 import ColorPicker from '@/components/ui/ColorPicker';
 import Toggle from '@/components/ui/Toggle';
 import Slider from '@/components/ui/Slider';
@@ -14,7 +13,6 @@ interface SettingsPanelProps {
   highlightPattern: HighlightPattern;
   onThemeChange: (themeName: string) => void;
   onUpdateCustomTheme: (property: keyof ColorTheme, value: string) => void;
-  onApplyCustomTheme: () => void;
   onFontChange: (fontName: string) => void;
   onToggleSetting: (setting: keyof ReaderSettings) => void;
   onNumericSettingChange: (setting: keyof ReaderSettings, value: number) => void;
@@ -29,18 +27,15 @@ export default function SettingsPanel({
   highlightPattern,
   onThemeChange,
   onUpdateCustomTheme,
-  onApplyCustomTheme,
   onFontChange,
   onToggleSetting,
   onNumericSettingChange,
   onHighlightPatternChange,
   onResetSettings
 }: SettingsPanelProps) {
-  const [isCustomThemeOpen, setIsCustomThemeOpen] = useState<boolean>(false);
   const [isPatternEditorOpen, setIsPatternEditorOpen] = useState<boolean>(false);
   const [newPattern, setNewPattern] = useState<string>('');
 
-  // Open pattern editor with current pattern formatted
   const openPatternEditor = () => {
     const formattedPattern = highlightPattern
       .map(rule => `${rule.maxLength}:${rule.highlightIndex}`)
@@ -49,7 +44,6 @@ export default function SettingsPanel({
     setIsPatternEditorOpen(true);
   };
 
-  // Handle applying a new highlight pattern
   const handleApplyPattern = () => {
     try {
       const patternRules = parsePatternString(newPattern);
@@ -60,7 +54,6 @@ export default function SettingsPanel({
     }
   };
 
-  // Reset to default pattern
   const handleResetPattern = () => {
     onHighlightPatternChange(DEFAULT_HIGHLIGHT_PATTERN);
     setIsPatternEditorOpen(false);
@@ -68,8 +61,11 @@ export default function SettingsPanel({
 
   return (
     <div 
-      className="mb-6 p-4 border rounded-lg"
-      style={{ backgroundColor: theme.wordBackground }}
+      className="mb-6 p-4 rounded-lg"
+      style={{ 
+        backgroundColor: theme.wordBackground,
+        border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+      }}
     >
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-lg font-medium" style={{ color: theme.text }}>
@@ -77,7 +73,12 @@ export default function SettingsPanel({
         </h3>
         <button 
           onClick={onResetSettings}
-          className="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          className="text-sm px-2 py-1 rounded transition"
+          style={{
+            backgroundColor: theme.background,
+            color: getContrastColor(theme.background),
+            border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+          }}
         >
           Reset to Defaults
         </button>
@@ -89,38 +90,42 @@ export default function SettingsPanel({
           Color Theme
         </label>
         <div className="flex flex-wrap gap-2">
-          {[...COLOR_THEMES, { ...customTheme }].map(theme => (
+          {[...COLOR_THEMES, { ...customTheme }].map(themeOption => (
             <button
-              key={theme.name}
+              key={themeOption.name}
               className={`px-3 py-1 text-sm rounded-md transition ${
-                settings.theme.name === theme.name 
-                  ? 'ring-2 ring-blue-500' 
+                settings.theme.name === themeOption.name 
+                  ? 'ring-2 ring-offset-2' 
                   : ''
               }`}
               style={{ 
-                backgroundColor: theme.background, 
-                color: getContrastColor(theme.background)
+                backgroundColor: themeOption.background,
+                color: getContrastColor(themeOption.background),
+                border: `1px solid ${hexToRgba(getContrastColor(themeOption.background), 0.1)}`,
+                ringColor: theme.highlightText,
+                boxShadow: settings.theme.name === themeOption.name ? `0 0 0 2px ${theme.highlightText}` : 'none'
               }}
-              onClick={() => onThemeChange(theme.name)}
-              aria-pressed={settings.theme.name === theme.name}
+              onClick={() => onThemeChange(themeOption.name)}
+              aria-pressed={settings.theme.name === themeOption.name}
             >
-              {theme.name}
+              {themeOption.name}
             </button>
           ))}
-          <button
-            className="px-3 py-1 text-sm rounded-md transition bg-gray-200 text-gray-800"
-            onClick={() => setIsCustomThemeOpen(!isCustomThemeOpen)}
-            aria-expanded={isCustomThemeOpen}
-          >
-            {isCustomThemeOpen ? 'Hide Editor' : 'Create Custom Theme'}
-          </button>
         </div>
       </div>
 
-      {/* Custom Theme Builder */}
-      {isCustomThemeOpen && (
-        <div className="mb-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
-          <h4 className="text-sm font-medium text-gray-800 mb-2">Custom Theme Builder</h4>
+      {/* Custom Theme Editor - Visible automatically when Custom theme is selected */}
+      {settings.theme.name === 'Custom' && (
+        <div 
+          className="mb-4 p-3 rounded-lg"
+          style={{ 
+            backgroundColor: theme.wordBackground,
+            border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+          }}
+        >
+          <h4 className="text-sm font-medium mb-2" style={{ color: theme.text }}>
+            Custom Theme Editor
+          </h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(customTheme)
@@ -134,21 +139,6 @@ export default function SettingsPanel({
                   onChange={(newColor) => onUpdateCustomTheme(key as keyof ColorTheme, newColor)}
                 />
               ))}
-          </div>
-          
-          <div className="flex gap-2 mt-3">
-            <button 
-              onClick={onApplyCustomTheme}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              Apply Custom Theme
-            </button>
-            <button 
-              onClick={() => setIsCustomThemeOpen(false)}
-              className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-            >
-              Cancel
-            </button>
           </div>
         </div>
       )}
@@ -164,9 +154,16 @@ export default function SettingsPanel({
               key={font.name}
               className={`px-3 py-1 text-sm rounded-md transition ${
                 settings.font.name === font.name 
-                  ? 'ring-2 ring-blue-500 bg-opacity-20' 
-                  : 'bg-gray-200 text-gray-800'
+                  ? 'ring-2 ring-offset-2' 
+                  : ''
               } ${font.className}`}
+              style={{
+                backgroundColor: theme.background,
+                color: getContrastColor(theme.background),
+                border: `1px solid ${hexToRgba(theme.text, 0.1)}`,
+                ringColor: theme.highlightText,
+                boxShadow: settings.font.name === font.name ? `0 0 0 2px ${theme.highlightText}` : 'none'
+              }}
               onClick={() => onFontChange(font.name)}
               aria-pressed={settings.font.name === font.name}
             >
@@ -176,6 +173,7 @@ export default function SettingsPanel({
         </div>
       </div>
 
+      {/* Rest of the settings components remain the same */}
       {/* Font Size */}
       <Slider 
         value={settings.fontSize}
@@ -185,6 +183,7 @@ export default function SettingsPanel({
         onChange={(value) => onNumericSettingChange('fontSize', value)}
         label={`Font Size: ${settings.fontSize}px`}
         textColor={theme.text}
+        accentColor={theme.highlightText}
       />
 
       {/* Letter Spacing */}
@@ -196,6 +195,7 @@ export default function SettingsPanel({
         onChange={(value) => onNumericSettingChange('letterSpacing', value)}
         label={`Letter Spacing: ${settings.letterSpacing}px`}
         textColor={theme.text}
+        accentColor={theme.highlightText}
       />
 
       {/* Toggle Options */}
@@ -224,15 +224,26 @@ export default function SettingsPanel({
           </span>
           <button 
             onClick={openPatternEditor}
-            className="px-3 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+            className="px-3 py-1 text-xs rounded transition"
+            style={{
+              backgroundColor: theme.background,
+              color: getContrastColor(theme.background),
+              border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+            }}
           >
             Customize Pattern
           </button>
         </div>
         
         {isPatternEditorOpen && (
-          <div className="mt-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-            <p className="text-sm text-gray-600 mb-2">
+          <div 
+            className="mt-3 p-3 rounded-lg"
+            style={{ 
+              backgroundColor: theme.wordBackground,
+              border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+            }}
+          >
+            <p className="text-sm mb-2" style={{ color: theme.text }}>
               Format: "maxLength:highlightIndex" separated by commas<br/>
               Example: "4:0, 6:1, 8:2, 10:3" means:
               <br/>- Words up to 4 chars: highlight 1st letter (index 0)
@@ -244,25 +255,44 @@ export default function SettingsPanel({
               value={newPattern} 
               onChange={(e) => setNewPattern(e.target.value)}
               placeholder="4:0, 6:1, 8:2, 10:3, ..."
-              className="w-full px-3 py-2 mb-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 mb-2 rounded-md"
+              style={{
+                backgroundColor: theme.background,
+                color: getContrastColor(theme.background),
+                border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+              }}
               aria-label="Enter highlight pattern"
             />
             <div className="flex gap-2 flex-wrap">
               <button 
                 onClick={handleApplyPattern}
-                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                className="px-3 py-1 rounded transition"
+                style={{
+                  backgroundColor: theme.highlightText,
+                  color: getContrastColor(theme.highlightText)
+                }}
               >
                 Apply Pattern
               </button>
               <button 
                 onClick={handleResetPattern}
-                className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+                className="px-3 py-1 rounded transition"
+                style={{
+                  backgroundColor: theme.background,
+                  color: getContrastColor(theme.background),
+                  border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+                }}
               >
                 Reset to Default
               </button>
               <button 
                 onClick={() => setIsPatternEditorOpen(false)}
-                className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                className="px-3 py-1 rounded transition"
+                style={{
+                  backgroundColor: theme.background,
+                  color: getContrastColor(theme.background),
+                  border: `1px solid ${hexToRgba(theme.text, 0.1)}`
+                }}
               >
                 Cancel
               </button>

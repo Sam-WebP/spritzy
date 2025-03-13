@@ -9,6 +9,7 @@ interface SliderProps {
   label: string;
   textColor?: string;
   showMinMax?: boolean;
+  accentColor?: string;
 }
 
 export default function Slider({
@@ -19,6 +20,7 @@ export default function Slider({
   onChange,
   label,
   textColor = '#374151',
+  accentColor = '#3b82f6',
   showMinMax = false
 }: SliderProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +41,7 @@ export default function Slider({
         step={step} 
         value={value} 
         onChange={handleChange}
+        style={{ accentColor }}
         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
         aria-label={label}
       />
