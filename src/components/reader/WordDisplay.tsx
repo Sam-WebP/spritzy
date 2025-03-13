@@ -1,11 +1,11 @@
-import { WordParts, ReaderSettings } from '@/types';
+'use client';
 
-interface WordDisplayProps {
-  currentWord: WordParts;
-  settings: ReaderSettings;
-}
+import { useAppSelector } from '@/redux/hooks';
 
-export default function WordDisplay({ currentWord, settings }: WordDisplayProps) {
+export default function WordDisplay() {
+  const { currentWord } = useAppSelector(state => state.reader);
+  const settings = useAppSelector(state => state.settings);
+  
   return (
     <div 
       className="h-20 flex items-center justify-center border-2 border-gray-300 rounded-lg mb-4"

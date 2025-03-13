@@ -1,12 +1,14 @@
-import { ColorTheme } from '@/types';
+'use client';
 
-interface ProgressBarProps {
-  current: number;
-  total: number;
-  theme: ColorTheme;
-}
+import { useAppSelector } from '@/redux/hooks';
 
-export default function ProgressBar({ current, total, theme }: ProgressBarProps) {
+export default function ProgressBar() {
+  const { currentWordIndex, words } = useAppSelector((state: RootState) => state.reader);
+  const { theme } = useAppSelector(state => state.settings);
+  
+  const current = currentWordIndex;
+  const total = words.length;
+  
   const percentage = total > 0 ? ((current + 1) / total) * 100 : 0;
   
   return (

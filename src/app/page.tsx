@@ -1,12 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SpritzReader from '@/components/reader/SpritzReader';
 import { ColorTheme } from '@/types';
 import { COLOR_THEMES } from '@/utils/constants';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function Home() {
   const [pageTheme, setPageTheme] = useState<ColorTheme>(COLOR_THEMES[0]);
+  const storeTheme = useAppSelector(state => state.settings.theme);
+  
+  // Sync page theme with store theme
+  useEffect(() => {
+    setPageTheme(storeTheme);
+  }, [storeTheme]);
 
   return (
     <main 
