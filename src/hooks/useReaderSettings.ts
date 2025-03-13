@@ -39,7 +39,7 @@ export function useReaderSettings(
         [setting]: !prev[setting as keyof ReaderSettings] 
       }));
     }
-  }, [settings]);
+  }, []);
 
   const updateNumericSetting = useCallback((setting: keyof ReaderSettings, value: number) => {
     setSettings(prev => ({

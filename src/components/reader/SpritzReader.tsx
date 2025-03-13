@@ -5,6 +5,8 @@ import { SpritzReaderProps } from '@/types';
 import { DEFAULT_TEXT } from '@/utils/constants';
 import { useReader } from '@/hooks/useReader';
 import { useTheme } from '@/hooks/useTheme';
+import { COLOR_THEMES } from '@/utils/constants';
+import type { ColorTheme } from '@/types';
 import { useReaderSettings } from '@/hooks/useReaderSettings';
 
 import WordDisplay from './WordDisplay';
@@ -42,8 +44,11 @@ export default function SpritzReader({
 
   // Handle applying theme changes
   const handleApplyTheme = (themeName: string) => {
+    const selectedTheme = themeName === 'Custom' 
+      ? customTheme 
+      : COLOR_THEMES.find((t: ColorTheme) => t.name === themeName) || COLOR_THEMES[0];
+    
     handleThemeChange(themeName);
-    const selectedTheme = theme;
     updateTheme(selectedTheme);
   };
   
