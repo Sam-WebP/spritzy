@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
+import { HexColorPicker } from 'react-colorful'; // You'll need to install this: npm install react-colorful
 
 interface HighlightRule {
   maxLength: number;
@@ -9,10 +10,11 @@ interface HighlightRule {
 
 type HighlightPattern = HighlightRule[];
 
-// Color themes
+// Color themes with raw color values
 interface ColorTheme {
   name: string;
   background: string;
+  containerBackground: string;
   text: string;
   highlightText: string;
   highlightBorder: string;
@@ -29,6 +31,7 @@ interface SpritzReaderProps {
   initialWpm?: number;
   initialText?: string;
   initialHighlightPattern?: HighlightPattern;
+  onThemeChange?: (theme: ColorTheme) => void;
 }
 
 interface WordParts {
@@ -46,47 +49,52 @@ interface ReaderSettings {
   showFocusBorder: boolean;
 }
 
-// Default color themes
+// Default color themes with actual color values (not Tailwind classes)
 const COLOR_THEMES: ColorTheme[] = [
   {
     name: 'Default',
-    background: 'bg-white',
-    text: 'text-gray-700',
-    highlightText: 'text-red-600',
-    highlightBorder: 'border-red-600',
-    wordBackground: 'bg-gray-50',
+    background: '#ffffff',
+    containerBackground: '#ffffff',
+    text: '#374151',
+    highlightText: '#dc2626',
+    highlightBorder: '#dc2626',
+    wordBackground: '#f9fafb',
   },
   {
     name: 'Dark',
-    background: 'bg-gray-800',
-    text: 'text-gray-200',
-    highlightText: 'text-yellow-400',
-    highlightBorder: 'border-yellow-400',
-    wordBackground: 'bg-gray-700',
+    background: '#1f2937',
+    containerBackground: '#1f2937',
+    text: '#e5e7eb',
+    highlightText: '#facc15',
+    highlightBorder: '#facc15',
+    wordBackground: '#374151',
   },
   {
     name: 'Sepia',
-    background: 'bg-amber-50',
-    text: 'text-amber-900',
-    highlightText: 'text-red-800',
-    highlightBorder: 'border-red-800',
-    wordBackground: 'bg-amber-100',
+    background: '#fffbeb',
+    containerBackground: '#fffbeb',
+    text: '#78350f',
+    highlightText: '#9a3412',
+    highlightBorder: '#9a3412',
+    wordBackground: '#fef3c7',
   },
   {
     name: 'Blue',
-    background: 'bg-blue-50',
-    text: 'text-blue-900',
-    highlightText: 'text-blue-600',
-    highlightBorder: 'border-blue-600',
-    wordBackground: 'bg-blue-100',
+    background: '#eff6ff',
+    containerBackground: '#eff6ff',
+    text: '#1e3a8a',
+    highlightText: '#2563eb',
+    highlightBorder: '#2563eb',
+    wordBackground: '#dbeafe',
   },
   {
     name: 'Green',
-    background: 'bg-green-50',
-    text: 'text-green-900',
-    highlightText: 'text-green-600',
-    highlightBorder: 'border-green-600',
-    wordBackground: 'bg-green-100',
+    background: '#ecfdf5',
+    containerBackground: '#ecfdf5',
+    text: '#065f46',
+    highlightText: '#10b981',
+    highlightBorder: '#10b981',
+    wordBackground: '#d1fae5',
   },
 ];
 
@@ -123,6 +131,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
   initialWpm = 300,
   initialText = "Welcome to the Spritz reader. This text will be displayed one word at a time with the focus point highlighted to help you read faster. Adjust the speed using the slider below.",
   initialHighlightPattern = DEFAULT_HIGHLIGHT_PATTERN,
+  onThemeChange,
 }) => {
   const [wpm, setWpm] = useState<number>(initialWpm);
   const [text, setText] = useState<string>(initialText);
@@ -135,6 +144,17 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
   const [newPattern, setNewPattern] = useState<string>('');
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState<boolean>(false);
   const [settings, setSettings] = useState<ReaderSettings>(DEFAULT_SETTINGS);
+  const [isCustomThemeOpen, setIsCustomThemeOpen] = useState<boolean>(false);
+  const [customTheme, setCustomTheme] = useState<ColorTheme>({
+    name: 'Custom',
+    background: '#ffffff',
+    containerBackground: '#ffffff',
+    text: '#374151',
+    highlightText: '#dc2626',
+    highlightBorder: '#dc2626',
+    wordBackground: '#f9fafb',
+  });
+  const [activeColorPicker, setActiveColorPicker] = useState<keyof ColorTheme | null>(null);
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -238,8 +258,31 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
 
   // Handle theme change
   const handleThemeChange = (themeName: string) => {
-    const theme = COLOR_THEMES.find(t => t.name === themeName) || COLOR_THEMES[0];
-    setSettings(prev => ({ ...prev, theme }));
+    let newTheme: ColorTheme;
+    
+    if (themeName === 'Custom') {
+      newTheme = customTheme;
+    } else {
+      newTheme = COLOR_THEMES.find(t => t.name === themeName) || COLOR_THEMES[0];
+    }
+    
+    setSettings(prev => ({ ...prev, theme: newTheme }));
+    
+    // Notify parent component about theme change if callback exists
+    if (onThemeChange) {
+      onThemeChange(newTheme);
+    }
+  };
+
+  // Apply custom theme
+  const applyCustomTheme = () => {
+    setSettings(prev => ({ ...prev, theme: customTheme }));
+    setIsCustomThemeOpen(false);
+    
+    // Notify parent component about theme change if callback exists
+    if (onThemeChange) {
+      onThemeChange(customTheme);
+    }
   };
 
   // Handle font change
@@ -266,9 +309,22 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
     }));
   };
 
+  // Update custom theme color
+  const updateCustomThemeColor = (property: keyof ColorTheme, value: string) => {
+    setCustomTheme(prev => ({
+      ...prev,
+      [property]: value
+    }));
+  };
+
   // Reset to default settings
   const resetSettings = () => {
     setSettings(DEFAULT_SETTINGS);
+    
+    // Notify parent component about theme change if callback exists
+    if (onThemeChange) {
+      onThemeChange(DEFAULT_SETTINGS.theme);
+    }
   };
 
   // Other functions remain the same
@@ -336,21 +392,49 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
     };
   }, [isPlaying, wpm, words, highlightPattern]);
 
+  // Update parent when theme changes
+  useEffect(() => {
+    if (onThemeChange) {
+      onThemeChange(settings.theme);
+    }
+  }, [settings.theme, onThemeChange]);
+
+  // Define a color label that's readable against any background
+  const getContrastColor = (hexColor: string) => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return white for dark colors, black for light colors
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  };
+
   return (
-    <div className={`w-full max-w-2xl mx-auto p-4 ${settings.theme.background} rounded-lg shadow-md transition-colors duration-300`}>
+    <div className="w-full max-w-2xl mx-auto p-4 rounded-lg shadow-md transition-colors duration-300"
+         style={{ backgroundColor: settings.theme.containerBackground }}
+    >
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <div className={`text-center text-2xl font-semibold ${settings.theme.text}`}>Spritz Reader</div>
+          <div className="text-center text-2xl font-semibold"
+               style={{ color: settings.theme.text }}>
+            Spritz Reader
+          </div>
           <button 
             onClick={() => setIsSettingsPanelOpen(!isSettingsPanelOpen)}
-            className={`px-3 py-1 rounded-md transition ${settings.theme.text} hover:opacity-80`}
+            className="px-3 py-1 rounded-md transition hover:opacity-80"
+            style={{ color: settings.theme.text }}
           >
             ⚙️ Settings
           </button>
         </div>
         
         {/* Word display area */}
-        <div className={`h-20 flex items-center justify-center border-2 border-gray-300 rounded-lg ${settings.theme.wordBackground} mb-4`}>
+        <div className="h-20 flex items-center justify-center border-2 border-gray-300 rounded-lg mb-4"
+             style={{ backgroundColor: settings.theme.wordBackground }}>
           <div 
             className={`${settings.font.className} flex items-baseline relative`}
             style={{ 
@@ -358,25 +442,33 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
               letterSpacing: `${settings.letterSpacing}px` 
             }}
           >
-            <div className={settings.theme.text}>{currentWord.before}</div>
+            <div style={{ color: settings.theme.text }}>{currentWord.before}</div>
             {settings.showFocusLetter ? (
               <div 
-                className={`${settings.theme.highlightText} mx-[2px] ${settings.showFocusBorder ? `border-b-2 ${settings.theme.highlightBorder}` : ''}`}
+                style={{ 
+                  color: settings.theme.highlightText,
+                  borderBottom: settings.showFocusBorder ? `2px solid ${settings.theme.highlightBorder}` : 'none',
+                  display: 'inline-block', // Fix extra padding issue
+                  lineHeight: '1',
+                }}
               >
                 {currentWord.pivot}
               </div>
             ) : (
-              <div className={settings.theme.text}>{currentWord.pivot}</div>
+              <div style={{ color: settings.theme.text }}>{currentWord.pivot}</div>
             )}
-            <div className={settings.theme.text}>{currentWord.after}</div>
+            <div style={{ color: settings.theme.text }}>{currentWord.after}</div>
           </div>
         </div>
         
         {/* Settings Panel */}
         {isSettingsPanelOpen && (
-          <div className={`mb-6 p-4 border rounded-lg ${settings.theme.wordBackground}`}>
+          <div className="mb-6 p-4 border rounded-lg"
+               style={{ backgroundColor: settings.theme.wordBackground }}>
             <div className="flex justify-between items-center mb-3">
-              <h3 className={`text-lg font-medium ${settings.theme.text}`}>Reader Settings</h3>
+              <h3 className="text-lg font-medium" style={{ color: settings.theme.text }}>
+                Reader Settings
+              </h3>
               <button 
                 onClick={resetSettings}
                 className="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
@@ -387,29 +479,92 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
 
             {/* Color Theme */}
             <div className="mb-4">
-              <label className={`block text-sm font-medium ${settings.theme.text} mb-1`}>
+              <label className="block text-sm font-medium mb-1" style={{ color: settings.theme.text }}>
                 Color Theme
               </label>
               <div className="flex flex-wrap gap-2">
-                {COLOR_THEMES.map(theme => (
+                {[...COLOR_THEMES, { ...customTheme }].map(theme => (
                   <button
                     key={theme.name}
                     className={`px-3 py-1 text-sm rounded-md transition ${
                       settings.theme.name === theme.name 
-                        ? 'ring-2 ring-blue-500 ' + theme.background + ' ' + theme.text
-                        : theme.background + ' ' + theme.text
+                        ? 'ring-2 ring-blue-500' 
+                        : ''
                     }`}
+                    style={{ 
+                      backgroundColor: theme.background, 
+                      color: getContrastColor(theme.background)
+                    }}
                     onClick={() => handleThemeChange(theme.name)}
                   >
                     {theme.name}
                   </button>
                 ))}
+                <button
+                  className="px-3 py-1 text-sm rounded-md transition bg-gray-200 text-gray-800"
+                  onClick={() => setIsCustomThemeOpen(!isCustomThemeOpen)}
+                >
+                  {isCustomThemeOpen ? 'Hide Editor' : 'Create Custom Theme'}
+                </button>
               </div>
             </div>
 
+            {/* Custom Theme Builder */}
+            {isCustomThemeOpen && (
+              <div className="mb-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <h4 className="text-sm font-medium text-gray-800 mb-2">Custom Theme Builder</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(customTheme)
+                    .filter(([key]) => key !== 'name')
+                    .map(([key, value]) => (
+                      <div key={key} className="mb-2">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-xs font-medium text-gray-700 capitalize">
+                            {key.replace(/([A-Z])/g, ' $1')}
+                          </label>
+                          <div className="flex items-center">
+                            <div 
+                              className="w-6 h-6 rounded-md inline-block mr-2 cursor-pointer border border-gray-300"
+                              style={{ backgroundColor: value as string }}
+                              onClick={() => setActiveColorPicker(activeColorPicker === key as keyof ColorTheme ? null : key as keyof ColorTheme)}
+                            ></div>
+                            <span className="text-xs font-mono">{value}</span>
+                          </div>
+                        </div>
+                        
+                        {activeColorPicker === key && (
+                          <div className="mt-2 p-2 bg-white rounded-md shadow-lg z-10">
+                            <HexColorPicker 
+                              color={value as string} 
+                              onChange={(newColor) => updateCustomThemeColor(key as keyof ColorTheme, newColor)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+                
+                <div className="flex gap-2 mt-3">
+                  <button 
+                    onClick={applyCustomTheme}
+                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Apply Custom Theme
+                  </button>
+                  <button 
+                    onClick={() => setIsCustomThemeOpen(false)}
+                    className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Font Family */}
             <div className="mb-4">
-              <label className={`block text-sm font-medium ${settings.theme.text} mb-1`}>
+              <label className="block text-sm font-medium mb-1" style={{ color: settings.theme.text }}>
                 Font Family
               </label>
               <div className="flex gap-2">
@@ -418,7 +573,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
                     key={font.name}
                     className={`px-3 py-1 text-sm rounded-md transition ${
                       settings.font.name === font.name 
-                        ? `ring-2 ring-blue-500 bg-opacity-20 ${settings.theme.highlightBorder}`
+                        ? 'ring-2 ring-blue-500 bg-opacity-20' 
                         : 'bg-gray-200 text-gray-800'
                     } ${font.className}`}
                     onClick={() => handleFontChange(font.name)}
@@ -431,7 +586,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
 
             {/* Font Size */}
             <div className="mb-4">
-              <label className={`block text-sm font-medium ${settings.theme.text} mb-1`}>
+              <label className="block text-sm font-medium mb-1" style={{ color: settings.theme.text }}>
                 Font Size: {settings.fontSize}px
               </label>
               <input 
@@ -447,7 +602,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
 
             {/* Letter Spacing */}
             <div className="mb-4">
-              <label className={`block text-sm font-medium ${settings.theme.text} mb-1`}>
+              <label className="block text-sm font-medium mb-1" style={{ color: settings.theme.text }}>
                 Letter Spacing: {settings.letterSpacing}px
               </label>
               <input 
@@ -471,7 +626,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
                   onChange={() => handleToggleSetting('showFocusLetter')}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="show-focus" className={`ml-2 text-sm ${settings.theme.text}`}>
+                <label htmlFor="show-focus" className="ml-2 text-sm" style={{ color: settings.theme.text }}>
                   Highlight Focus Letter
                 </label>
               </div>
@@ -483,7 +638,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
                   onChange={() => handleToggleSetting('showFocusBorder')}
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="show-border" className={`ml-2 text-sm ${settings.theme.text}`}>
+                <label htmlFor="show-border" className="ml-2 text-sm" style={{ color: settings.theme.text }}>
                   Show Focus Border
                 </label>
               </div>
@@ -492,7 +647,9 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
             {/* Highlight Pattern Settings */}
             <div>
               <div className="flex justify-between items-center">
-                <span className={`text-sm font-medium ${settings.theme.text}`}>Highlight Pattern</span>
+                <span className="text-sm font-medium" style={{ color: settings.theme.text }}>
+                  Highlight Pattern
+                </span>
                 <button 
                   onClick={openPatternEditor}
                   className="px-3 py-1 text-xs bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
@@ -547,7 +704,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
         <div className="flex justify-center gap-2 mb-4">
           <button 
             onClick={resetReading}
-            className={`px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition`}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
           >
             Reset
           </button>
@@ -571,7 +728,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
         {/* WPM slider */}
         <div className="mb-4">
           <div className="flex justify-between">
-            <label htmlFor="wpm-slider" className={`block text-sm font-medium ${settings.theme.text}`}>
+            <label htmlFor="wpm-slider" className="block text-sm font-medium" style={{ color: settings.theme.text }}>
               Reading Speed: {wpm} WPM
             </label>
           </div>
@@ -585,7 +742,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
             onChange={handleWpmChange}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs" style={{ color: settings.theme.text }}>
             <span>100</span>
             <span>1000</span>
           </div>
@@ -599,7 +756,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
               style={{ width: `${words.length > 0 ? (currentWordIndex / words.length) * 100 : 0}%` }}
             ></div>
           </div>
-          <div className={`text-xs ${settings.theme.text} text-right mt-1`}>
+          <div className="text-xs text-right mt-1" style={{ color: settings.theme.text }}>
             {currentWordIndex + 1}/{words.length} words
           </div>
         </div>
@@ -607,7 +764,7 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
       
       {/* Text input */}
       <div>
-        <label htmlFor="text-input" className={`block text-sm font-medium ${settings.theme.text} mb-1`}>
+        <label htmlFor="text-input" className="block text-sm font-medium mb-1" style={{ color: settings.theme.text }}>
           Text to Read
         </label>
         <textarea 
@@ -615,7 +772,12 @@ const SpritzReader: React.FC<SpritzReaderProps> = ({
           value={text} 
           onChange={handleTextChange}
           rows={5} 
-          className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${settings.theme.wordBackground} ${settings.theme.text}`}
+          style={{ 
+            backgroundColor: settings.theme.wordBackground, 
+            color: settings.theme.text,
+            borderColor: 'rgba(0,0,0,0.2)' 
+          }}
+          className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           placeholder="Enter or paste text to read..."
         />
         <button 
