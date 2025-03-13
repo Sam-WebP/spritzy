@@ -7,7 +7,7 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({ current, total, theme }: ProgressBarProps) {
-  const percentage = total > 0 ? (current / total) * 100 : 0;
+  const percentage = total > 0 ? ((current + 1) / total) * 100 : 0;
   
   return (
     <div className="mb-4">
