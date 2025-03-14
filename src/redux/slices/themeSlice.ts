@@ -16,7 +16,6 @@ const initialState: ThemeState = {
     text: '#374151',
     highlightText: '#dc2626',
     highlightBorder: '#dc2626',
-    wordBackground: '#f9fafb',
   },
 };
 

@@ -12,7 +12,6 @@ export interface ColorTheme {
   text: string;
   highlightText: string;
   highlightBorder: string;
-  wordBackground: string;
 }
 
 export interface FontOption {

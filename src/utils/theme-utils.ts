@@ -9,13 +9,13 @@ export function applyCustomThemeToCssVars(theme: ColorTheme) {
   document.documentElement.style.setProperty('--primary', theme.highlightText);
   document.documentElement.style.setProperty('--primary-foreground', getContrastColor(theme.highlightText));
   
-  // Background
+  // Use same background color for all components
   document.documentElement.style.setProperty('--background-custom', theme.background);
   document.documentElement.style.setProperty('--foreground-custom', theme.text);
-  
-  // Card (for the reader display)
-  document.documentElement.style.setProperty('--card-custom', theme.wordBackground);
+  document.documentElement.style.setProperty('--card-custom', theme.background);
   document.documentElement.style.setProperty('--card-foreground-custom', theme.text);
+  document.documentElement.style.setProperty('--popover-custom', theme.background);
+  document.documentElement.style.setProperty('--popover-foreground-custom', theme.text);
   
   // Border
   document.documentElement.style.setProperty('--border-custom', theme.highlightBorder);

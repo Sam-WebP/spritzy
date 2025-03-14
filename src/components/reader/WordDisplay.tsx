@@ -9,7 +9,7 @@ export default function WordDisplay() {
   const settings = useAppSelector(state => state.settings);
   
   return (
-    <Card className="h-20">
+    <Card className="h-20 bg-background">
       <CardContent className="h-full flex items-center justify-center p-2">
         <div 
           className={cn(
@@ -26,7 +26,7 @@ export default function WordDisplay() {
           <div className="text-foreground">{currentWord.before}</div>
           <div 
             className={cn(
-              "text-primary",
+              { "text-primary": settings.showFocusLetter },
               { "border-b-2 border-primary": settings.showFocusBorder }
             )}
           >

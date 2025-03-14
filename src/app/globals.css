@@ -116,8 +116,10 @@
 .using-custom-theme {
   --background: var(--background-custom);
   --foreground: var(--foreground-custom);
-  --card: var(--card-custom);
-  --card-foreground: var(--card-foreground-custom);
+  --card: var(--background-custom);  /* Use the same background */
+  --card-foreground: var(--foreground-custom);
+  --popover: var(--background-custom);  /* Apply to popover too */
+  --popover-foreground: var(--foreground-custom);
   --border: var(--border-custom);
   --ring: var(--ring-custom);
 }

@@ -20,7 +20,7 @@ export default function TextInput() {
         onChange={(e) => dispatch(setText(e.target.value))}
         rows={5} 
         placeholder="Enter or paste text to read..."
-        className="resize-none"
+        className="resize-none bg-background"
       />
       <Button 
         onClick={() => dispatch(processText())}

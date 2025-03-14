@@ -8,7 +8,6 @@ export const COLOR_THEMES: ColorTheme[] = [
     text: '#374151',
     highlightText: '#dc2626',
     highlightBorder: '#dc2626',
-    wordBackground: '#f9fafb',
   },
   {
     name: 'Yellow',
@@ -17,7 +16,6 @@ export const COLOR_THEMES: ColorTheme[] = [
     text: '#e5e7eb',
     highlightText: '#facc15',
     highlightBorder: '#facc15',
-    wordBackground: '#374151',
   },
   {
     name: 'Sepia',
@@ -26,7 +24,6 @@ export const COLOR_THEMES: ColorTheme[] = [
     text: '#78350f',
     highlightText: '#9a3412',
     highlightBorder: '#9a3412',
-    wordBackground: '#fef3c7',
   },
   {
     name: 'Blue',
@@ -35,7 +32,6 @@ export const COLOR_THEMES: ColorTheme[] = [
     text: '#1e3a8a',
     highlightText: '#2563eb',
     highlightBorder: '#2563eb',
-    wordBackground: '#dbeafe',
   },
   {
     name: 'Green',
@@ -44,7 +40,6 @@ export const COLOR_THEMES: ColorTheme[] = [
     text: '#065f46',
     highlightText: '#10b981',
     highlightBorder: '#10b981',
-    wordBackground: '#d1fae5',
   },
 ];
 
