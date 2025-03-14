@@ -113,6 +113,15 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.using-custom-theme {
+  --background: var(--background-custom);
+  --foreground: var(--foreground-custom);
+  --card: var(--card-custom);
+  --card-foreground: var(--card-foreground-custom);
+  --border: var(--border-custom);
+  --ring: var(--ring-custom);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

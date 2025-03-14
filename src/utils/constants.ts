@@ -2,7 +2,7 @@ import { ColorTheme, FontOption, HighlightPattern, ReaderSettings } from '@/type
 
 export const COLOR_THEMES: ColorTheme[] = [
   {
-    name: 'Default',
+    name: 'Red',
     background: '#ffffff',
     containerBackground: '#ffffff',
     text: '#374151',
@@ -11,7 +11,7 @@ export const COLOR_THEMES: ColorTheme[] = [
     wordBackground: '#f9fafb',
   },
   {
-    name: 'Dark',
+    name: 'Yellow',
     background: '#1f2937',
     containerBackground: '#1f2937',
     text: '#e5e7eb',
