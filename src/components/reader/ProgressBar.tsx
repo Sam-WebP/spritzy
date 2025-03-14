@@ -1,10 +1,10 @@
 'use client';
 
 import { useAppSelector } from '@/redux/hooks';
+import { Progress } from "@/components/ui/progress";
 
 export default function ProgressBar() {
-  const { currentWordIndex, words } = useAppSelector((state: RootState) => state.reader);
-  const { theme } = useAppSelector(state => state.settings);
+  const { currentWordIndex, words } = useAppSelector((state) => state.reader);
   
   const current = currentWordIndex;
   const total = words.length;
@@ -12,18 +12,9 @@ export default function ProgressBar() {
   const percentage = total > 0 ? ((current + 1) / total) * 100 : 0;
   
   return (
-    <div className="mb-4">
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div 
-          className="bg-blue-600 h-2.5 rounded-full transition-all duration-200" 
-          style={{ width: `${percentage}%` }}
-          role="progressbar"
-          aria-valuenow={current + 1}
-          aria-valuemin={1}
-          aria-valuemax={total}
-        ></div>
-      </div>
-      <div className="text-xs text-right mt-1" style={{ color: theme.text }}>
+    <div className="mb-4 space-y-2">
+      <Progress value={percentage} className="w-full" />
+      <div className="text-xs text-right mt-1 text-muted-foreground">
         {current + 1}/{total} words
       </div>
     </div>

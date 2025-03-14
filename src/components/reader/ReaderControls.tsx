@@ -2,6 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { startReading, pauseReading, resetReading } from '@/redux/slices/readerSlice';
+import { Button } from "@/components/ui/button";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
 export default function ReaderControls() {
   const dispatch = useAppDispatch();
@@ -9,29 +11,33 @@ export default function ReaderControls() {
   
   return (
     <div className="flex justify-center gap-2 mb-4">
-      <button 
+      <Button 
         onClick={() => dispatch(resetReading())}
-        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+        variant="outline"
+        size="sm"
         aria-label="Reset reading"
       >
-        Reset
-      </button>
+        <RotateCcw className="h-4 w-4 mr-2" /> Reset
+      </Button>
+      
       {!isPlaying ? (
-        <button 
+        <Button 
           onClick={() => dispatch(startReading())}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          variant="default"
+          size="sm"
           aria-label="Start reading"
         >
-          Start
-        </button>
+          <Play className="h-4 w-4 mr-2" /> Start
+        </Button>
       ) : (
-        <button 
+        <Button 
           onClick={() => dispatch(pauseReading())}
-          className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+          variant="secondary"
+          size="sm"
           aria-label="Pause reading"
         >
-          Pause
-        </button>
+          <Pause className="h-4 w-4 mr-2" /> Pause
+        </Button>
       )}
     </div>
   );
