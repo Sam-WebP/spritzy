@@ -48,7 +48,7 @@ function getContrastColor(hexColor: string): string {
     
     // Return white for dark colors, black for light colors
     return luminance > 0.5 ? '#000000' : '#ffffff';
-  } catch (e) {
+  } catch {
     console.error('Error calculating contrast color for', hexColor);
     return '#ffffff'; // Default to white on error
   }

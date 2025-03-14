@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReaderSettings, ColorTheme, FontOption } from '@/types';
-import { DEFAULT_SETTINGS, FONT_OPTIONS, COLOR_THEMES } from '@/utils/constants';
+import { ReaderSettings, ColorTheme } from '@/types';
+import { DEFAULT_SETTINGS, FONT_OPTIONS } from '@/utils/constants';
 
 const initialState: ReaderSettings = DEFAULT_SETTINGS;
 
@@ -18,7 +18,7 @@ export const settingsSlice = createSlice({
     toggleSetting: (state, action: PayloadAction<keyof ReaderSettings>) => {
       const setting = action.payload;
       if (typeof state[setting] === 'boolean') {
-        // @ts-ignore - We've already checked that this is a boolean
+        // @ts-expect-error - We've already checked that this is a boolean
         state[setting] = !state[setting];
       }
     },
@@ -28,7 +28,7 @@ export const settingsSlice = createSlice({
     ) => {
       const { setting, value } = action.payload;
       if (typeof state[setting] === 'number') {
-        // @ts-ignore - We've already checked that this is a number
+        // @ts-expect-error - We've already checked that this is a number
         state[setting] = value;
       }
     },
