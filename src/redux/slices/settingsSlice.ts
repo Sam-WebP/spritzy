@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReaderSettings } from '@/types';
-import { DEFAULT_SETTINGS, FONT_OPTIONS } from '@/utils/constants';
+import { ReaderSettings, MicroPauseSettings } from '@/types';
+import { DEFAULT_SETTINGS, FONT_OPTIONS, DEFAULT_MICRO_PAUSE_SETTINGS } from '@/utils/constants';
 
 const initialState: ReaderSettings = {
   ...DEFAULT_SETTINGS,
@@ -35,12 +35,26 @@ export const settingsSlice = createSlice({
     setColorScheme: (state, action: PayloadAction<string>) => {
       state.colorScheme = action.payload;
     },
+    toggleMicroPauses: (state) => {
+      state.microPauses.enableMicroPauses = !state.microPauses.enableMicroPauses;
+    },
+    updateMicroPause: (
+      state,
+      action: PayloadAction<{setting: keyof MicroPauseSettings, value: number}>
+    ) => {
+      const { setting, value } = action.payload;
+      if (setting !== 'enableMicroPauses') {
+        // @ts-expect-error - We know these are number settings
+        state.microPauses[setting] = value;
+      }
+    },
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
         colorScheme: 'Red',
+        microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
       };
-    }
+    },
   },
 });
 
@@ -49,7 +63,9 @@ export const {
   toggleSetting,
   updateNumericSetting,
   setColorScheme,
-  resetSettings
+  resetSettings,
+  toggleMicroPauses,
+  updateMicroPause,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

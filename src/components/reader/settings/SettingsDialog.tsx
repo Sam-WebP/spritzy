@@ -18,6 +18,7 @@ import ThemeSettings from './ThemeSettings';
 import FontSettings from './FontSettings';
 import DisplaySettings from './DisplaySettings';
 import PatternSettings from './PatternSettings';
+import MicroPauseSettings from './MicroPauseSettings';
 
 export default function SettingsDialog() {
   const dispatch = useAppDispatch();
@@ -39,12 +40,13 @@ export default function SettingsDialog() {
         </DialogHeader>
         
         <Tabs defaultValue="theme" className="mt-2">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="theme">Theme</TabsTrigger>
-            <TabsTrigger value="font">Font</TabsTrigger>
-            <TabsTrigger value="display">Display</TabsTrigger>
-            <TabsTrigger value="pattern">Pattern</TabsTrigger>
-          </TabsList>
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="theme">Theme</TabsTrigger>
+          <TabsTrigger value="font">Font</TabsTrigger>
+          <TabsTrigger value="display">Display</TabsTrigger>
+          <TabsTrigger value="pattern">Pattern</TabsTrigger>
+          <TabsTrigger value="pauses">Pauses</TabsTrigger>
+        </TabsList>
           <div className="py-4">
             <TabsContent value="theme" className="mt-0">
               <ThemeSettings />
@@ -57,6 +59,9 @@ export default function SettingsDialog() {
             </TabsContent>
             <TabsContent value="pattern" className="mt-0">
               <PatternSettings />
+            </TabsContent>
+            <TabsContent value="pauses" className="mt-0">
+              <MicroPauseSettings />
             </TabsContent>
           </div>
         </Tabs>

@@ -1,4 +1,4 @@
-import { ColorTheme, FontOption, HighlightPattern, ReaderSettings } from '@/types';
+import { ColorTheme, FontOption, HighlightPattern, ReaderSettings, MicroPauseSettings } from '@/types';
 
 export const COLOR_THEMES: ColorTheme[] = [
   {
@@ -66,6 +66,15 @@ export const DEFAULT_HIGHLIGHT_PATTERN: HighlightPattern = [
   { maxLength: 20, highlightIndex: 8 },
 ];
 
+export const DEFAULT_MICRO_PAUSE_SETTINGS: MicroPauseSettings = {
+  enableMicroPauses: true,
+  largeNumbersPause: 0.5,
+  sentenceEndPause: 1.1,
+  otherPunctuationPause: 0.9,
+  paragraphPause: 1.1,
+  longWordPause: 0.5,
+};
+
 export const DEFAULT_SETTINGS: ReaderSettings = {
   theme: COLOR_THEMES[0],
   font: FONT_OPTIONS[0],
@@ -74,6 +83,7 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   fontSize: 24,
   showFocusBorder: true,
   colorScheme: 'Red',
+  microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
 };
 
 export const DEFAULT_TEXT = "Welcome to the Spritz reader. This text will be displayed one word at a time with the focus point highlighted to help you read faster. Adjust the speed using the slider below.";

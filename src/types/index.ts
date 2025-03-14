@@ -29,6 +29,15 @@ export interface WordParts {
   after: string;
 }
 
+export interface MicroPauseSettings {
+  enableMicroPauses: boolean;
+  largeNumbersPause: number;
+  sentenceEndPause: number;
+  otherPunctuationPause: number;
+  paragraphPause: number;
+  longWordPause: number;
+}
+
 export interface ReaderSettings {
   theme: ColorTheme;
   font: FontOption;
@@ -37,6 +46,7 @@ export interface ReaderSettings {
   fontSize: number;
   showFocusBorder: boolean;
   colorScheme: string;
+  microPauses: MicroPauseSettings;
 }
 
 export interface SpritzReaderProps {
