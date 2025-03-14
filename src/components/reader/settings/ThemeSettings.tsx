@@ -1,44 +1,56 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTheme } from "next-themes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Sun, Moon, Palette } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { 
-  handleThemeChange, 
-  updateCustomTheme 
-} from '@/redux/slices/themeSlice';
-import { updateTheme } from '@/redux/slices/settingsSlice';
-import { ColorTheme } from '@/types';
+import { setColorScheme } from '@/redux/slices/settingsSlice';
 import { COLOR_THEMES } from '@/utils/constants';
-import { applyCustomThemeToCssVars, removeCustomTheme, SystemTheme } from '@/utils/theme-utils';
+import { 
+  getThemeColors,
+  applyThemeColors,
+  removeCustomTheme,
+  getContrastColor,
+  SystemTheme 
+} from '@/utils/theme-utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ThemeSettings() {
-  const { theme: systemTheme, setTheme } = useTheme();
+  const { theme: systemTheme, setTheme, resolvedTheme } = useTheme();
   const dispatch = useAppDispatch();
-  const settings = useAppSelector(state => state.settings);
-  const { customTheme } = useAppSelector(state => state.theme);
+  const { colorScheme } = useAppSelector(state => state.settings);
+  const isDarkMode = resolvedTheme === 'dark';
   
-  // Handle system theme selection (light/dark)
+  // Apply theme whenever light/dark mode or color scheme changes
+  useEffect(() => {
+    if (colorScheme && colorScheme !== 'Default') {
+      const colors = getThemeColors(colorScheme, isDarkMode);
+      applyThemeColors(colors);
+    } else {
+      removeCustomTheme();
+    }
+  }, [colorScheme, isDarkMode]);
+  
+  // Handle system theme change (light/dark)
   const handleSystemThemeChange = (theme: SystemTheme) => {
     setTheme(theme);
-    removeCustomTheme(); // Remove any custom theme when switching to system theme
   };
   
-  // Handle selection of a preset color scheme
-  const handleColorSchemeChange = (themeName: string) => {
-    const selectedTheme = themeName === 'Custom' 
-        ? customTheme 
-        : COLOR_THEMES.find(t => t.name === themeName);
+  // Handle color scheme selection
+  const handleColorSchemeChange = (schemeName: string) => {
+    dispatch(setColorScheme(schemeName));
     
-    if (selectedTheme) {
-      dispatch(handleThemeChange(themeName));
-      dispatch(updateTheme(selectedTheme));
-      applyCustomThemeToCssVars(selectedTheme);
+    if (schemeName === 'Default') {
+      removeCustomTheme();
+    } else {
+      const colors = getThemeColors(schemeName, isDarkMode);
+      
+      document.documentElement.style.setProperty('--primary-custom', colors.highlightText);
+      document.documentElement.style.setProperty('--primary-foreground-custom', getContrastColor(colors.highlightText));
+      
+      applyThemeColors(colors);
     }
   };
 
@@ -46,7 +58,7 @@ export default function ThemeSettings() {
     <div className="space-y-4">
       <Tabs defaultValue="system">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="system">System Theme</TabsTrigger>
+          <TabsTrigger value="system">Light/Dark Mode</TabsTrigger>
           <TabsTrigger value="colorScheme">Color Scheme</TabsTrigger>
         </TabsList>
         
@@ -96,90 +108,32 @@ export default function ThemeSettings() {
                   key={theme.name}
                   variant="outline"
                   size="sm"
-                  className={
-                    document.documentElement.classList.contains('using-custom-theme') && 
-                    settings.theme.name === theme.name 
-                      ? "border-primary" 
-                      : ""
-                  }
+                  className={colorScheme === theme.name ? "border-primary" : ""}
                   onClick={() => handleColorSchemeChange(theme.name)}
                 >
-                  <div 
-                    className="w-4 h-4 rounded-full mr-2" 
-                    style={{ 
-                      backgroundColor: theme.highlightText,
-                      border: `1px solid ${theme.text}`
-                    }} 
-                  />
-                  {theme.name}
+                  <div className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-full mr-1" 
+                      style={{ backgroundColor: theme.light.highlightText }} 
+                    />
+                    <div 
+                      className="w-3 h-3 rounded-full mr-2" 
+                      style={{ backgroundColor: theme.dark.highlightText }} 
+                    />
+                    {theme.name}
+                  </div>
                 </Button>
               ))}
               
               <Button
                 variant="outline"
                 size="sm"
-                className={
-                  document.documentElement.classList.contains('using-custom-theme') && 
-                  settings.theme.name === "Custom" 
-                    ? "border-primary" 
-                    : ""
-                }
-                onClick={() => handleColorSchemeChange('Custom')}
+                className={colorScheme === "Default" ? "border-primary" : ""}
+                onClick={() => handleColorSchemeChange('Default')}
               >
-                <Palette className="h-4 w-4 mr-2" />
-                Custom
+                System Default
               </Button>
             </div>
-
-            {/* Custom Theme Editor */}
-            {settings.theme.name === 'Custom' && 
-             document.documentElement.classList.contains('using-custom-theme') && (
-              <Card className="border-dashed mt-4">
-                <CardHeader className="py-2">
-                  <CardTitle className="text-sm">Custom Theme Editor</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(customTheme)
-                    .filter(([key]) => key !== 'name')
-                    .map(([key, value]) => (
-                      <div key={key} className="flex flex-col gap-2">
-                        <Label htmlFor={key} className="capitalize">
-                          {key.replace(/([A-Z])/g, ' $1')}
-                        </Label>
-                        <div className="flex gap-2 items-center">
-                          <div 
-                            className="w-6 h-6 rounded-md border"
-                            style={{ backgroundColor: value as string }}
-                          />
-                          <Input
-                            id={key}
-                            value={value as string}
-                            onChange={(e) => {
-                              const newColor = e.target.value;
-                              const updatedTheme = {
-                                ...customTheme,
-                                [key]: newColor
-                              };
-                              
-                              dispatch(updateCustomTheme({
-                                property: key as keyof ColorTheme, 
-                                value: newColor
-                              }));
-                              
-                              if (settings.theme.name === 'Custom') {
-                                dispatch(updateTheme(updatedTheme));
-                                applyCustomThemeToCssVars(updatedTheme);
-                              }
-                            }}
-                            className="w-28 font-mono"
-                            type="text"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                </CardContent>
-              </Card>
-            )}
           </div>
         </TabsContent>
       </Tabs>

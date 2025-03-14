@@ -1,37 +1,34 @@
-import { ColorTheme } from "@/types";
+import { ThemeColors } from '@/types';
+import { COLOR_THEMES } from '@/utils/constants';
 
 // Define valid system themes
 export type SystemTheme = 'light' | 'dark' | 'system';
 
-// Apply a custom color theme to CSS variables
-export function applyCustomThemeToCssVars(theme: ColorTheme) {
-  // Primary color (highlighted text)
-  document.documentElement.style.setProperty('--primary', theme.highlightText);
-  document.documentElement.style.setProperty('--primary-foreground', getContrastColor(theme.highlightText));
+// Get theme colors based on color scheme and current mode
+export function getThemeColors(colorSchemeName: string, isDarkMode: boolean): ThemeColors {
+  const selectedTheme = COLOR_THEMES.find(theme => theme.name === colorSchemeName) || COLOR_THEMES[0];
+  return isDarkMode ? selectedTheme.dark : selectedTheme.light;
+}
+
+// Apply only accent/primary colors without changing backgrounds or borders
+export function applyThemeColors(colors: ThemeColors) {
+  // Only apply primary/highlight colors, not backgrounds or borders
+  document.documentElement.style.setProperty('--primary', colors.highlightText);
+  document.documentElement.style.setProperty('--primary-foreground', getContrastColor(colors.highlightText));
   
-  // Use same background color for all components
-  document.documentElement.style.setProperty('--background-custom', theme.background);
-  document.documentElement.style.setProperty('--foreground-custom', theme.text);
-  document.documentElement.style.setProperty('--card-custom', theme.background);
-  document.documentElement.style.setProperty('--card-foreground-custom', theme.text);
-  document.documentElement.style.setProperty('--popover-custom', theme.background);
-  document.documentElement.style.setProperty('--popover-foreground-custom', theme.text);
-  
-  // Border
-  document.documentElement.style.setProperty('--border-custom', theme.highlightBorder);
-  document.documentElement.style.setProperty('--ring-custom', theme.highlightBorder);
-  
-  // Enable custom theme
-  document.documentElement.classList.add('using-custom-theme');
+  // Add a special class to indicate we're using accent theming
+  document.documentElement.classList.remove('using-custom-theme');
+  document.documentElement.classList.add('using-accent-theme');
 }
 
 // Remove custom theme and revert to system theme
 export function removeCustomTheme() {
   document.documentElement.classList.remove('using-custom-theme');
+  document.documentElement.classList.remove('using-accent-theme');
 }
 
-// Get a contrasting color (black or white) for text on a given background
-function getContrastColor(hexColor: string): string {
+// Export this function so it can be used in other components
+export function getContrastColor(hexColor: string): string {
   try {
     // Handle incomplete hex codes
     if (hexColor.startsWith('#') && hexColor.length < 7) {

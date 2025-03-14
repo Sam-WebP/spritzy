@@ -1,16 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReaderSettings, ColorTheme } from '@/types';
+import { ReaderSettings } from '@/types';
 import { DEFAULT_SETTINGS, FONT_OPTIONS } from '@/utils/constants';
 
-const initialState: ReaderSettings = DEFAULT_SETTINGS;
+const initialState: ReaderSettings = {
+  ...DEFAULT_SETTINGS,
+  colorScheme: 'Red', // Default color scheme
+};
 
 export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    updateTheme: (state, action: PayloadAction<ColorTheme>) => {
-      state.theme = action.payload;
-    },
     updateFont: (state, action: PayloadAction<string>) => {
       const font = FONT_OPTIONS.find(f => f.name === action.payload) || DEFAULT_SETTINGS.font;
       state.font = font;
@@ -32,17 +32,23 @@ export const settingsSlice = createSlice({
         state[setting] = value;
       }
     },
+    setColorScheme: (state, action: PayloadAction<string>) => {
+      state.colorScheme = action.payload;
+    },
     resetSettings: () => {
-      return DEFAULT_SETTINGS;
+      return {
+        ...DEFAULT_SETTINGS,
+        colorScheme: 'Red',
+      };
     }
   },
 });
 
 export const {
-  updateTheme,
   updateFont,
   toggleSetting,
   updateNumericSetting,
+  setColorScheme,
   resetSettings
 } = settingsSlice.actions;
 

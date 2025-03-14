@@ -5,13 +5,17 @@ export interface HighlightRule {
 
 export type HighlightPattern = HighlightRule[];
 
-export interface ColorTheme {
-  name: string;
+export interface ThemeColors {
   background: string;
-  containerBackground: string;
   text: string;
   highlightText: string;
   highlightBorder: string;
+}
+
+export interface ColorTheme {
+  name: string;
+  light: ThemeColors;
+  dark: ThemeColors;
 }
 
 export interface FontOption {
@@ -32,6 +36,7 @@ export interface ReaderSettings {
   letterSpacing: number;
   fontSize: number;
   showFocusBorder: boolean;
+  colorScheme: string;
 }
 
 export interface SpritzReaderProps {

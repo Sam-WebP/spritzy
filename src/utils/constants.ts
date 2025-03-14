@@ -3,43 +3,48 @@ import { ColorTheme, FontOption, HighlightPattern, ReaderSettings } from '@/type
 export const COLOR_THEMES: ColorTheme[] = [
   {
     name: 'Red',
-    background: '#ffffff',
-    containerBackground: '#ffffff',
-    text: '#374151',
-    highlightText: '#dc2626',
-    highlightBorder: '#dc2626',
+    light: {
+      background: '#ffffff',
+      text: '#374151',
+      highlightText: '#dc2626',
+      highlightBorder: '#dc2626',
+    },
+    dark: {
+      background: '#111827',
+      text: '#f3f4f6',
+      highlightText: '#ef4444',
+      highlightBorder: '#ef4444',
+    }
   },
   {
     name: 'Yellow',
-    background: '#1f2937',
-    containerBackground: '#1f2937',
-    text: '#e5e7eb',
-    highlightText: '#facc15',
-    highlightBorder: '#facc15',
-  },
-  {
-    name: 'Sepia',
-    background: '#fffbeb',
-    containerBackground: '#fffbeb',
-    text: '#78350f',
-    highlightText: '#9a3412',
-    highlightBorder: '#9a3412',
+    light: {
+      background: '#fefce8',
+      text: '#422006',
+      highlightText: '#ca8a04',
+      highlightBorder: '#ca8a04',
+    },
+    dark: {
+      background: '#1f2937', 
+      text: '#e5e7eb',
+      highlightText: '#facc15',
+      highlightBorder: '#facc15',
+    }
   },
   {
     name: 'Blue',
-    background: '#eff6ff',
-    containerBackground: '#eff6ff',
-    text: '#1e3a8a',
-    highlightText: '#2563eb',
-    highlightBorder: '#2563eb',
-  },
-  {
-    name: 'Green',
-    background: '#ecfdf5',
-    containerBackground: '#ecfdf5',
-    text: '#065f46',
-    highlightText: '#10b981',
-    highlightBorder: '#10b981',
+    light: {
+      background: '#eff6ff',
+      text: '#1e3a8a',
+      highlightText: '#2563eb',
+      highlightBorder: '#2563eb',
+    },
+    dark: {
+      background: '#0f172a',
+      text: '#e2e8f0',
+      highlightText: '#3b82f6',
+      highlightBorder: '#3b82f6',
+    }
   },
 ];
 
@@ -68,6 +73,7 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   letterSpacing: 0,
   fontSize: 24,
   showFocusBorder: true,
+  colorScheme: 'Red',
 };
 
 export const DEFAULT_TEXT = "Welcome to the Spritz reader. This text will be displayed one word at a time with the focus point highlighted to help you read faster. Adjust the speed using the slider below.";
