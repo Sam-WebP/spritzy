@@ -31,6 +31,7 @@ export interface WordParts {
 
 export interface MicroPauseSettings {
   enableMicroPauses: boolean;
+  stackPauses: boolean;
   largeNumbersPause: number;
   sentenceEndPause: number;
   otherPunctuationPause: number;

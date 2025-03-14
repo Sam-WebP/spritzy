@@ -18,34 +18,69 @@ export function calculateMicroPauseFactor(
 ): number {
   if (!settings.enableMicroPauses) return 1;
   
-  let factor = 1;
+  // If stacking is enabled, we'll accumulate all applicable pauses
+  // If not, we'll collect all applicable pauses and only use the largest one
   
-  // Check for large numbers (4+ digits)
-  if (LARGE_NUMBER_REGEX.test(currentWord)) {
-    factor += settings.largeNumbersPause;
+  if (settings.stackPauses) {
+    // STACKING BEHAVIOR: All pauses accumulate
+    let factor = 1;
+    
+    // Check for large numbers (4+ digits)
+    if (LARGE_NUMBER_REGEX.test(currentWord)) {
+      factor += settings.largeNumbersPause;
+    }
+    
+    // Check for sentence end punctuation
+    if (SENTENCE_END_REGEX.test(currentWord)) {
+      factor += settings.sentenceEndPause;
+    }
+    
+    // Check for other punctuation
+    if (OTHER_PUNCTUATION_REGEX.test(currentWord) || 
+        (nextWord && OPENING_PAREN_REGEX.test(nextWord))) {
+      factor += settings.otherPunctuationPause;
+    }
+    
+    // Check for paragraph break
+    if (nextWord && SENTENCE_END_REGEX.test(currentWord) && 
+        PARAGRAPH_START_REGEX.test(nextWord)) {
+      factor += settings.paragraphPause;
+    }
+    
+    // Check for long words
+    if (currentWord.length >= LONG_WORD_THRESHOLD) {
+      factor += settings.longWordPause;
+    }
+    
+    return factor;
+  } else {
+    // NON-STACKING BEHAVIOR: Only apply the largest pause factor
+    const pauseFactors = [];
+    
+    // Check for each pause condition and collect applicable factors
+    if (LARGE_NUMBER_REGEX.test(currentWord)) {
+      pauseFactors.push(settings.largeNumbersPause);
+    }
+    
+    if (SENTENCE_END_REGEX.test(currentWord)) {
+      pauseFactors.push(settings.sentenceEndPause);
+    }
+    
+    if (OTHER_PUNCTUATION_REGEX.test(currentWord) || 
+        (nextWord && OPENING_PAREN_REGEX.test(nextWord))) {
+      pauseFactors.push(settings.otherPunctuationPause);
+    }
+    
+    if (nextWord && SENTENCE_END_REGEX.test(currentWord) && 
+        PARAGRAPH_START_REGEX.test(nextWord)) {
+      pauseFactors.push(settings.paragraphPause);
+    }
+    
+    if (currentWord.length >= LONG_WORD_THRESHOLD) {
+      pauseFactors.push(settings.longWordPause);
+    }
+    
+    // If any pauses apply, use the largest one; otherwise, no additional pause
+    return pauseFactors.length > 0 ? 1 + Math.max(...pauseFactors) : 1;
   }
-  
-  // Check for sentence end punctuation
-  if (SENTENCE_END_REGEX.test(currentWord)) {
-    factor += settings.sentenceEndPause;
-  }
-  
-  // Check for other punctuation
-  if (OTHER_PUNCTUATION_REGEX.test(currentWord) || 
-      (nextWord && OPENING_PAREN_REGEX.test(nextWord))) {
-    factor += settings.otherPunctuationPause;
-  }
-  
-  // Check for paragraph break - if next word starts with capital after sentence end
-  if (nextWord && SENTENCE_END_REGEX.test(currentWord) && 
-      PARAGRAPH_START_REGEX.test(nextWord)) {
-    factor += settings.paragraphPause;
-  }
-  
-  // Check for long words
-  if (currentWord.length >= LONG_WORD_THRESHOLD) {
-    factor += settings.longWordPause;
-  }
-  
-  return factor;
 }

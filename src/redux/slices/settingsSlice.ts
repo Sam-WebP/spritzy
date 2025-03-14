@@ -48,6 +48,9 @@ export const settingsSlice = createSlice({
         state.microPauses[setting] = value;
       }
     },
+    toggleStackPauses: (state) => {
+      state.microPauses.stackPauses = !state.microPauses.stackPauses;
+    },
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
@@ -65,6 +68,7 @@ export const {
   setColorScheme,
   resetSettings,
   toggleMicroPauses,
+  toggleStackPauses,
   updateMicroPause,
 } = settingsSlice.actions;
 

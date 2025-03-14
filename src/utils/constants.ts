@@ -68,6 +68,7 @@ export const DEFAULT_HIGHLIGHT_PATTERN: HighlightPattern = [
 
 export const DEFAULT_MICRO_PAUSE_SETTINGS: MicroPauseSettings = {
   enableMicroPauses: true,
+  stackPauses: false,
   largeNumbersPause: 0.5,
   sentenceEndPause: 1.1,
   otherPunctuationPause: 0.9,

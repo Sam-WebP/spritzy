@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { toggleMicroPauses, updateMicroPause } from '@/redux/slices/settingsSlice';
+import { toggleMicroPauses, updateMicroPause, toggleStackPauses } from '@/redux/slices/settingsSlice';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -30,6 +30,22 @@ export default function MicroPauseSettings() {
 
       {microPauses.enableMicroPauses && (
         <div className="space-y-6">
+          {/* Add the stacking toggle */}
+          <div className="flex items-center space-x-2 mb-4 border p-3 rounded-md bg-muted/30">
+            <Switch
+              id="stack-pauses"
+              checked={microPauses.stackPauses}
+              onCheckedChange={() => dispatch(toggleStackPauses())}
+            />
+            <div className="flex flex-col">
+              <Label htmlFor="stack-pauses">Stack Multiple Pauses</Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                {microPauses.stackPauses 
+                  ? "Multiple pauses will combine (e.g., comma + long word = longer pause)" 
+                  : "Only the largest applicable pause is used"}
+              </p>
+            </div>
+          </div>
           {/* Large Numbers Pause */}
           <div className="space-y-2">
             <div className="flex justify-between">
