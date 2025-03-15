@@ -53,6 +53,7 @@ export interface ReaderSettings {
   microPauses: MicroPauseSettings;
   focusModeActive: boolean;
   autoHideFocusControls: boolean;
+  showFocusContext: boolean;
 }
 
 export interface SpritzReaderProps {

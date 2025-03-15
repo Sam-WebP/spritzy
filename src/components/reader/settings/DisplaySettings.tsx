@@ -163,6 +163,7 @@ export default function DisplaySettings() {
         <Label className="text-base">Focus Mode Settings</Label>
         
         <div className="grid grid-cols-1 gap-4">
+          {/* Auto-hide controls toggle */}
           <div className="flex items-center space-x-2">
             <Switch
               id="auto-hide-controls"
@@ -173,7 +174,19 @@ export default function DisplaySettings() {
           </div>
           <p className="text-xs text-muted-foreground pl-7">
             When enabled, controls will hide after 2 seconds of inactivity during playback.
-            Move your mouse to show controls again.
+          </p>
+          
+          {/* Context toggle */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="show-focus-context"
+              checked={settings.showFocusContext}
+              onCheckedChange={() => dispatch(toggleSetting('showFocusContext'))}
+            />
+            <Label htmlFor="show-focus-context">Show Text Context</Label>
+          </div>
+          <p className="text-xs text-muted-foreground pl-7">
+            Shows surrounding text to provide context while reading in focus mode.
           </p>
         </div>
       </div>
