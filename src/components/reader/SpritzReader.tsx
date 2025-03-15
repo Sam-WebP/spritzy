@@ -7,6 +7,7 @@ import { DEFAULT_TEXT } from '@/utils/constants';
 import { setText, setWpm, processText, incrementWordIndex, startReading, pauseReading, setWordsAtTime } from '@/redux/slices/readerSlice';
 import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
 import { Maximize } from "lucide-react";
+import QuizDialog from '@/components/quiz/QuizDialog';
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -164,6 +165,7 @@ export default function SpritzReader({
         {/* Text input - now with more rows */}
         <TextInput />
       </CardContent>
+      <QuizDialog />
     </Card>
   );
 }
