@@ -19,6 +19,7 @@ import FontSettings from './FontSettings';
 import DisplaySettings from './DisplaySettings';
 import PatternSettings from './PatternSettings';
 import MicroPauseSettings from './MicroPauseSettings';
+import QuizSettings from './QuizSettings';
 
 export default function SettingsDialog() {
   const dispatch = useAppDispatch();
@@ -39,11 +40,12 @@ export default function SettingsDialog() {
         </DialogHeader>
         
         <Tabs defaultValue="display" className="mt-2">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="display">Display</TabsTrigger>
-            <TabsTrigger value="font">Font</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
-          </TabsList>
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="display">Display</TabsTrigger>
+          <TabsTrigger value="font">Font</TabsTrigger>
+          <TabsTrigger value="quiz">Quiz</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        </TabsList>
           
           <ScrollArea className="h-[400px] mt-4">
             <div className="py-4 pr-4">
@@ -52,6 +54,9 @@ export default function SettingsDialog() {
               </TabsContent>
               <TabsContent value="font" className="mt-0">
                 <FontSettings />
+              </TabsContent>
+              <TabsContent value="quiz" className="mt-0">
+                <QuizSettings />
               </TabsContent>
               <TabsContent value="advanced" className="mt-0 space-y-8">
                 <PatternSettings />
