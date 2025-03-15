@@ -6,6 +6,7 @@ const initialState: ReaderSettings = {
   ...DEFAULT_SETTINGS,
   colorScheme: 'Red',
   focusModeActive: false,
+  autoHideFocusControls: true,
 };
 
 export const settingsSlice = createSlice({
@@ -55,6 +56,9 @@ export const settingsSlice = createSlice({
     toggleFocusMode: (state) => {
       state.focusModeActive = !state.focusModeActive;
     },
+    toggleFocusControlsHiding: (state) => {
+      state.autoHideFocusControls = !state.autoHideFocusControls;
+    },
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
@@ -75,6 +79,7 @@ export const {
   toggleStackPauses,
   updateMicroPause,
   toggleFocusMode,
+  toggleFocusControlsHiding,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

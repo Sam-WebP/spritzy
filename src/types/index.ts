@@ -49,6 +49,7 @@ export interface ReaderSettings {
   colorScheme: string;
   microPauses: MicroPauseSettings;
   focusModeActive: boolean;
+  autoHideFocusControls: boolean;
 }
 
 export interface SpritzReaderProps {

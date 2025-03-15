@@ -86,6 +86,7 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   colorScheme: 'Red',
   microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
   focusModeActive: false,
+  autoHideFocusControls: true,
 };
 
 export const DEFAULT_TEXT = "Welcome to the Spritz reader. This text will be displayed one word at a time with the focus point highlighted to help you read faster. Adjust the speed using the slider below.";
