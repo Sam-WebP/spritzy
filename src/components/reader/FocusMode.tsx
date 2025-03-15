@@ -132,7 +132,7 @@ export default function FocusMode() {
           className={cn(
             focusModeFont.className, 
             textColor,
-            "flex items-baseline relative"
+            "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
           )}
           style={{ 
             fontSize: `${focusModeFontSize}px`, 
@@ -141,16 +141,22 @@ export default function FocusMode() {
           aria-live="assertive"
           aria-atomic="true"
         >
-          <div>{currentWord.before}</div>
+          {/* Before text - right aligned */}
+          <div className="text-right pr-0.5">{currentWord.before}</div>
+          
+          {/* Pivot letter - centered */}
           <div 
             className={cn(
+              "text-center",
               { "text-primary": showFocusLetter },
               { "border-b-2 border-primary": showFocusBorder }
             )}
           >
             {currentWord.pivot}
           </div>
-          <div>{currentWord.after}</div>
+          
+          {/* After text - left aligned */}
+          <div className="text-left pl-0.5">{currentWord.after}</div>
         </div>
       </div>
       
