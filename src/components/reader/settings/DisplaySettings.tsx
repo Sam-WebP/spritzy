@@ -175,19 +175,6 @@ export default function DisplaySettings() {
           <p className="text-xs text-muted-foreground pl-7">
             When enabled, controls will hide after 2 seconds of inactivity during playback.
           </p>
-          
-          {/* Context toggle */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="show-focus-context"
-              checked={settings.showFocusContext}
-              onCheckedChange={() => dispatch(toggleSetting('showFocusContext'))}
-            />
-            <Label htmlFor="show-focus-context">Show Text Context</Label>
-          </div>
-          <p className="text-xs text-muted-foreground pl-7">
-            Shows surrounding text to provide context while reading in focus mode.
-          </p>
         </div>
       </div>
     </div>

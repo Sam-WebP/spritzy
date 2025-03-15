@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { X, Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NumberControl from "@/components/controls/NumberControl";
-import { useWindowSize } from '@/hooks/useWindowSize';
 
 export default function FocusMode() {
   const dispatch = useAppDispatch();
@@ -17,9 +16,6 @@ export default function FocusMode() {
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
   
-  const { showFocusContext } = useAppSelector(state => state.settings);
-  const { width: windowWidth } = useWindowSize();
-
   // Container ref to check click targets
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -94,34 +90,6 @@ export default function FocusMode() {
     }
   }, [isPlaying, showControls, lastMouseMove, autoHideFocusControls, cooldownActive]);
   
-
-  // Calculate context display
-  const contextDisplay = useMemo(() => {
-    if (!showFocusContext) return null;
-    
-    // Determine reasonable context size based on screen size and font size
-    const maxContextWords = Math.max(2, Math.floor((windowWidth / focusModeFontSize) / 8));
-    
-    // Get previous words (already read)
-    const startIdx = Math.max(0, currentWordIndex - maxContextWords);
-    const previousWords = words.slice(startIdx, currentWordIndex).join(' ');
-    
-    // Get upcoming words (not yet read)
-    const endIdx = Math.min(words.length, currentWordIndex + wordsAtTime + maxContextWords);
-    const upcomingWords = words.slice(currentWordIndex + wordsAtTime, endIdx).join(' ');
-    
-    return { previousWords, upcomingWords };
-  }, [showFocusContext, words, currentWordIndex, wordsAtTime, windowWidth, focusModeFontSize]);
-
-  // Determine if we should use vertical layout
-  const useVerticalLayout = useMemo(() => {
-    if (!contextDisplay) return false;
-    
-    // Use vertical layout on narrower screens or when context is long
-    return windowWidth < 768 || 
-          (contextDisplay.previousWords.length + contextDisplay.upcomingWords.length) > windowWidth / 8;
-  }, [contextDisplay, windowWidth]);
-
   // When play state changes, handle visibility
   useEffect(() => {
     // When stopping, always show controls
@@ -184,7 +152,7 @@ export default function FocusMode() {
       onMouseMove={handleMouseMove}
       onClick={handleContainerClick}
     >
-      {/* Restored header controls with WPM controls */}
+      {/* Header controls with editable settings */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed top-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm transition-opacity z-10">
           <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -239,108 +207,31 @@ export default function FocusMode() {
       )}
 
       {/* Word display in the center */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full">
-        <div className={cn(focusModeFont.className, textColor, "relative flex justify-center")}>
-          {/* Main word always in center */}
-          <div 
-            className="relative z-10"
-            style={{ 
-              fontSize: `${focusModeFontSize}px`, 
-              letterSpacing: `${focusModeLetterSpacing}px` 
-            }}
-          >
-            <div className="flex items-baseline">
-              <span>{currentWord.before}</span>
-              <span 
-                className={cn(
-                  { "text-primary": showFocusLetter },
-                  { "border-b-2 border-primary": showFocusBorder }
-                )}
-              >
-                {currentWord.pivot}
-              </span>
-              <span>{currentWord.after}</span>
-            </div>
-          </div>
-          
-          {/* Context text */}
-          {showFocusContext && contextDisplay && (
-            <div className="absolute inset-0 flex items-baseline justify-center pointer-events-none">
-              {/* This gives us a container spanning the full width */}
-              <div className="w-full flex justify-center items-baseline">
-                {useVerticalLayout ? (
-                  <div className="flex flex-col items-center">
-                    {/* Previous text above */}
-                    <div 
-                      className="text-muted-foreground opacity-60 text-center mb-8"
-                      style={{ 
-                        fontSize: `${focusModeFontSize * 0.6}px`, 
-                        letterSpacing: `${focusModeLetterSpacing}px`,
-                        position: "absolute",
-                        top: `-${focusModeFontSize * 2}px`,
-                        maxWidth: "80%"
-                      }}
-                    >
-                      {contextDisplay.previousWords}
-                    </div>
-                    
-                    {/* Invisible placeholder for main word */}
-                    <div style={{ height: `${focusModeFontSize}px` }} className="invisible">
-                      {currentWord.before}{currentWord.pivot}{currentWord.after}
-                    </div>
-                    
-                    {/* Upcoming text below */}
-                    <div 
-                      className="text-muted-foreground opacity-60 text-center mt-8"
-                      style={{ 
-                        fontSize: `${focusModeFontSize * 0.6}px`, 
-                        letterSpacing: `${focusModeLetterSpacing}px`,
-                        position: "absolute",
-                        bottom: `-${focusModeFontSize * 2}px`,
-                        maxWidth: "80%"
-                      }}
-                    >
-                      {contextDisplay.upcomingWords}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-baseline px-4 max-w-full">
-                    {/* Previous text with fixed gap */}
-                    <div 
-                      className="text-muted-foreground opacity-60 text-right mr-6 overflow-hidden"
-                      style={{ 
-                        fontSize: `${focusModeFontSize * 0.6}px`, 
-                        letterSpacing: `${focusModeLetterSpacing}px`,
-                        flex: 1
-                      }}
-                    >
-                      {contextDisplay.previousWords}
-                    </div>
-                    
-                    {/* Invisible placeholder for main word */}
-                    <div className="invisible whitespace-nowrap flex-shrink-0" style={{ 
-                      fontSize: `${focusModeFontSize}px`, 
-                      letterSpacing: `${focusModeLetterSpacing}px` 
-                    }}>
-                      {currentWord.before}{currentWord.pivot}{currentWord.after}
-                    </div>
-                    
-                    {/* Upcoming text with fixed gap */}
-                    <div 
-                      className="text-muted-foreground opacity-60 text-left ml-6 overflow-hidden"
-                      style={{ 
-                        fontSize: `${focusModeFontSize * 0.6}px`, 
-                        letterSpacing: `${focusModeLetterSpacing}px`,
-                        flex: 1
-                      }}
-                    >
-                      {contextDisplay.upcomingWords}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
+        <div 
+          className={cn(
+            focusModeFont.className, 
+            textColor,
+            "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
           )}
+          style={{ 
+            fontSize: `${focusModeFontSize}px`, 
+            letterSpacing: `${focusModeLetterSpacing}px` 
+          }}
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div className="text-right pr-0.5">{currentWord.before}</div>
+          <div 
+            className={cn(
+              "text-center",
+              { "text-primary": showFocusLetter },
+              { "border-b-2 border-primary": showFocusBorder }
+            )}
+          >
+            {currentWord.pivot}
+          </div>
+          <div className="text-left pl-0.5">{currentWord.after}</div>
         </div>
       </div>
       
