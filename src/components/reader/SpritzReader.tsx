@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import WordDisplay from './WordDisplay';
 import ReaderControls from './ReaderControls';
-import SpeedControl from './SpeedControl';
 import ProgressBar from './ProgressBar';
 import TextInput from './TextInput';
 import SettingsDialog from './settings/SettingsDialog';
@@ -154,18 +153,15 @@ export default function SpritzReader({
         {/* Word Display */}
         <WordDisplay />
         
+        {/* Progress indicator - moved up and made interactive */}
+        <ProgressBar interactive={true} />
+        
         {/* Controls */}
         <ReaderControls />
         
-        {/* WPM Slider */}
-        <SpeedControl />
-        
-        {/* Progress indicator */}
-        <ProgressBar />
-        
         <Separator className="my-4" />
         
-        {/* Text input */}
+        {/* Text input - now with more rows */}
         <TextInput />
       </CardContent>
     </Card>

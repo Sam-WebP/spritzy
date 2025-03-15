@@ -18,7 +18,7 @@ export default function TextInput() {
         id="text-input"
         value={text} 
         onChange={(e) => dispatch(setText(e.target.value))}
-        rows={5} 
+        rows={8}
         placeholder="Enter or paste text to read..."
         className="resize-none bg-background"
       />

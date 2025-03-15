@@ -25,26 +25,23 @@ export default function ProgressBar({ interactive = false }) {
     dispatch(setCurrentWordIndex(Math.max(0, Math.min(newIndex, total - 1))));
   };
   
-  // Handle mouse down for dragging
+  // Mouse event handlers for scrubbing functionality
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive) return;
     setIsDragging(true);
     handleProgressClick(e);
   };
   
-  // Handle mouse move for dragging
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive || !isDragging) return;
     handleProgressClick(e);
   };
   
-  // Handle mouse up to end dragging
   const handleMouseUp = () => {
     if (!interactive) return;
     setIsDragging(false);
   };
   
-  // Add global mouse up event listener
   useEffect(() => {
     if (interactive) {
       const globalMouseUp = () => setIsDragging(false);

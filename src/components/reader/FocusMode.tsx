@@ -4,14 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { toggleFocusMode } from '@/redux/slices/settingsSlice';
-import { startReading, pauseReading, resetReading, setCurrentWordIndex } from '@/redux/slices/readerSlice';
+import { startReading, pauseReading, setCurrentWordIndex } from '@/redux/slices/readerSlice';
 import { Button } from "@/components/ui/button";
 import { X, Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function FocusMode() {
   const dispatch = useAppDispatch();
-  const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime } = useAppSelector((state) => state.reader);
+  const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime, wpm } = useAppSelector((state) => state.reader);
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
   
@@ -126,6 +126,37 @@ export default function FocusMode() {
       onMouseMove={handleMouseMove}
       onClick={handleContainerClick}
     >
+      {/* Header controls */}
+      {(showControls || !autoHideFocusControls) && (
+        <div className="fixed top-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm transition-opacity z-10">
+          <div className="max-w-3xl mx-auto flex justify-between items-center">
+            <div className="flex space-x-4">
+              <div className="text-sm font-medium">
+                <span className="text-muted-foreground mr-1">Speed:</span>
+                <span>{wordsAtTime > 1 ? `${wpm * wordsAtTime} words/min` : `${wpm} WPM`}</span>
+              </div>
+              
+              <div className="text-sm font-medium">
+                <span className="text-muted-foreground mr-1">Words at once:</span>
+                <span>{wordsAtTime}</span>
+              </div>
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(toggleFocusMode());
+              }}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Exit Focus Mode
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Clean, borderless word display in the center - directly rendering the word, not using Card */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
         <div 
@@ -160,79 +191,64 @@ export default function FocusMode() {
         </div>
       </div>
       
-      {/* Controls - positioned at the bottom, separate from word display */}
+      {/* Bottom controls - must be preserved */}
       {(showControls || !autoHideFocusControls) && (
-        <>
-          {/* Exit button */}
-          <Button
-            className="fixed top-4 right-4 z-10"
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent click from bubbling
-              dispatch(toggleFocusMode());
-            }}
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-4 space-y-4">
+          {/* Seek bar */}
+          <div 
+            className="relative w-full h-2 bg-secondary rounded-full overflow-hidden cursor-pointer"
+            onClick={handleSeekBarClick}
           >
-            <X className="h-4 w-4" />
-          </Button>
-          
-          <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-4 space-y-4">
-            {/* Seek bar */}
             <div 
-              className="relative w-full h-2 bg-secondary rounded-full overflow-hidden cursor-pointer"
-              onClick={handleSeekBarClick}
+              className="h-full bg-primary" 
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+          
+          <div className="text-xs text-center mt-1 text-muted-foreground">
+            Word {currentWordIndex + 1}-{Math.min(currentWordIndex + wordsAtTime, words.length)}/{words.length}
+          </div>
+          
+          <div className="flex justify-center gap-4">
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from bubbling
+                dispatch(setCurrentWordIndex(0));
+              }}
+              variant="ghost"
+              size="sm"
+              aria-label="Reset reading"
             >
-              <div 
-                className="h-full bg-primary" 
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
+              <RotateCcw className="h-4 w-4 mr-2" /> Reset
+            </Button>
             
-            <div className="text-xs text-center mt-1 text-muted-foreground">
-              Word {currentWordIndex + 1}-{Math.min(currentWordIndex + wordsAtTime, words.length)}/{words.length}
-            </div>
-            
-            <div className="flex justify-center gap-4">
+            {!isPlaying ? (
               <Button 
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click from bubbling
-                  dispatch(resetReading());
+                  dispatch(startReading());
                 }}
                 variant="ghost"
                 size="sm"
-                aria-label="Reset reading"
+                aria-label="Start reading"
               >
-                <RotateCcw className="h-4 w-4 mr-2" /> Reset
+                <Play className="h-4 w-4 mr-2" /> Start
               </Button>
-              
-              {!isPlaying ? (
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent click from bubbling
-                    dispatch(startReading());
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Start reading"
-                >
-                  <Play className="h-4 w-4 mr-2" /> Start
-                </Button>
-              ) : (
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent click from bubbling
-                    dispatch(pauseReading());
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Pause reading"
-                >
-                  <Pause className="h-4 w-4 mr-2" /> Pause
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent click from bubbling
+                  dispatch(pauseReading());
+                }}
+                variant="ghost"
+                size="sm"
+                aria-label="Pause reading"
+              >
+                <Pause className="h-4 w-4 mr-2" /> Pause
+              </Button>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
