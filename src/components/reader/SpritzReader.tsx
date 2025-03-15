@@ -20,6 +20,7 @@ import SettingsDialog from './settings/SettingsDialog';
 import { useInterval } from '@/hooks/useInterval';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { calculateMicroPauseFactor } from '@/utils/micro-pause-utils';
+import { startReading, pauseReading } from '@/redux/slices/readerSlice';
 
 export default function SpritzReader({
   initialWpm = 300,
@@ -66,6 +67,31 @@ export default function SpritzReader({
     
     setCurrentDelay(baseDelay * factor);
   }, [currentWordIndex, wpm, words, text, settings.microPauses]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.key === ' ' || e.code === 'Space') && !e.repeat) {
+        // Prevent default only when we handle it (avoid interfering with input fields)
+        const activeElement = document.activeElement;
+        const isTextField = activeElement instanceof HTMLInputElement || 
+                            activeElement instanceof HTMLTextAreaElement;
+        
+        if (!isTextField) {
+          e.preventDefault();
+          if (isPlaying) {
+            dispatch(pauseReading());
+          } else {
+            dispatch(startReading());
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [dispatch, isPlaying]);
 
   // Use the interval with the dynamic delay
   useInterval(() => {

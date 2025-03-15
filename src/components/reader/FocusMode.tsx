@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { toggleFocusMode } from '@/redux/slices/settingsSlice';
@@ -12,15 +12,11 @@ import { cn } from "@/lib/utils";
 export default function FocusMode() {
   const dispatch = useAppDispatch();
   const { currentWordIndex, words, isPlaying, currentWord } = useAppSelector((state) => state.reader);
-  const { 
-    autoHideFocusControls, 
-    focusModeFont, 
-    focusModeFontSize, 
-    focusModeLetterSpacing, 
-    showFocusLetter, 
-    showFocusBorder 
-  } = useAppSelector(state => state.settings);
+  const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
+  
+  // Container ref to check click targets
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // State to track if controls should be visible
   const [showControls, setShowControls] = useState(true);
@@ -32,6 +28,29 @@ export default function FocusMode() {
   // Background color based on theme
   const bgColor = resolvedTheme === 'dark' ? "bg-black" : "bg-white";
   const textColor = resolvedTheme === 'dark' ? "text-white" : "text-black";
+  
+  // Toggle play/pause
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      dispatch(pauseReading());
+    } else {
+      dispatch(startReading());
+    }
+  };
+  
+  // Handle clicks on the container
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // Skip if clicking on a button or other interactive element
+    const target = e.target as HTMLElement;
+    const isButton = target.tagName === 'BUTTON' || 
+                    target.closest('button') || 
+                    target.closest('[role="button"]') ||
+                    target.closest('.relative'); // Skip seek bar
+
+    if (!isButton) {
+      togglePlayPause();
+    }
+  };
   
   // Hide controls after a delay when playing (only if auto-hide is enabled)
   useEffect(() => {
@@ -59,11 +78,15 @@ export default function FocusMode() {
     }
   };
   
-  // Handle key press (ESC to exit)
+  // Handle key press (ESC to exit, Space to toggle play/pause)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         dispatch(toggleFocusMode());
+      } else if (e.key === ' ' || e.code === 'Space') {
+        // Prevent page scroll when pressing space
+        e.preventDefault();
+        togglePlayPause();
       }
     };
     
@@ -71,7 +94,7 @@ export default function FocusMode() {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [dispatch]);
+  }, [dispatch, isPlaying]);
   
   // Handle seek bar interaction
   const handleSeekBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -79,15 +102,20 @@ export default function FocusMode() {
     const position = (e.clientX - rect.left) / rect.width;
     const newIndex = Math.floor(position * words.length);
     dispatch(setCurrentWordIndex(Math.max(0, Math.min(newIndex, words.length - 1))));
+    
+    // Prevent the click from bubbling to the container
+    e.stopPropagation();
   };
   
   return (
     <div 
+      ref={containerRef}
       className={cn(
         "fixed inset-0 z-50", 
         bgColor
       )}
       onMouseMove={handleMouseMove}
+      onClick={handleContainerClick}
     >
       {/* Clean, borderless word display in the center - directly rendering the word, not using Card */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
@@ -125,7 +153,10 @@ export default function FocusMode() {
             className="fixed top-4 right-4 z-10"
             size="sm"
             variant="ghost"
-            onClick={() => dispatch(toggleFocusMode())}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent click from bubbling
+              dispatch(toggleFocusMode());
+            }}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -148,7 +179,10 @@ export default function FocusMode() {
             
             <div className="flex justify-center gap-4">
               <Button 
-                onClick={() => dispatch(resetReading())}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent click from bubbling
+                  dispatch(resetReading());
+                }}
                 variant="ghost"
                 size="sm"
                 aria-label="Reset reading"
@@ -158,7 +192,10 @@ export default function FocusMode() {
               
               {!isPlaying ? (
                 <Button 
-                  onClick={() => dispatch(startReading())}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent click from bubbling
+                    dispatch(startReading());
+                  }}
                   variant="ghost"
                   size="sm"
                   aria-label="Start reading"
@@ -167,7 +204,10 @@ export default function FocusMode() {
                 </Button>
               ) : (
                 <Button 
-                  onClick={() => dispatch(pauseReading())}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent click from bubbling
+                    dispatch(pauseReading());
+                  }}
                   variant="ghost"
                   size="sm"
                   aria-label="Pause reading"
