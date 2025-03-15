@@ -11,6 +11,7 @@ interface ReaderState {
   currentWordIndex: number;
   currentWord: WordParts;
   highlightPattern: HighlightPattern;
+  wordsAtTime: number;
 }
 
 const initialState: ReaderState = {
@@ -21,6 +22,7 @@ const initialState: ReaderState = {
   currentWordIndex: 0,
   currentWord: { before: '', pivot: '', after: '' },
   highlightPattern: DEFAULT_HIGHLIGHT_PATTERN,
+  wordsAtTime: 1,
 };
 
 // Initialize the first word
@@ -36,6 +38,9 @@ export const readerSlice = createSlice({
   reducers: {
     setText: (state, action: PayloadAction<string>) => {
       state.text = action.payload;
+    },
+    setWordsAtTime: (state, action: PayloadAction<number>) => {
+      state.wordsAtTime = action.payload;
     },
     setWpm: (state, action: PayloadAction<number>) => {
       state.wpm = action.payload;
@@ -131,6 +136,7 @@ export const {
   startReading,
   pauseReading,
   resetReading,
+  setWordsAtTime,
 } = readerSlice.actions;
 
 export default readerSlice.reducer;

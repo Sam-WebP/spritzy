@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { SpritzReaderProps } from '@/types';
 import { DEFAULT_TEXT } from '@/utils/constants';
-import { setText, setWpm, processText, incrementWordIndex } from '@/redux/slices/readerSlice';
-import { toggleFocusMode } from '@/redux/slices/settingsSlice';
+import { setText, setWpm, processText, incrementWordIndex, startReading, pauseReading, setWordsAtTime } from '@/redux/slices/readerSlice';
+import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
 import { Maximize } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import WordDisplay from './WordDisplay';
@@ -20,7 +20,7 @@ import SettingsDialog from './settings/SettingsDialog';
 import { useInterval } from '@/hooks/useInterval';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { calculateMicroPauseFactor } from '@/utils/micro-pause-utils';
-import { startReading, pauseReading } from '@/redux/slices/readerSlice';
+import NumberControl from "@/components/controls/NumberControl";
 
 export default function SpritzReader({
   initialWpm = 300,
@@ -28,7 +28,7 @@ export default function SpritzReader({
   onThemeChange,
 }: SpritzReaderProps) {
   const dispatch = useAppDispatch();
-  const { isPlaying, wpm, words, text, currentWordIndex } = useAppSelector(state => state.reader);
+  const { isPlaying, wpm, words, text, currentWordIndex, wordsAtTime } = useAppSelector(state => state.reader);
   const settings = useAppSelector(state => state.settings);
   
   // Add state for the current word delay
@@ -103,7 +103,40 @@ export default function SpritzReader({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-xl font-semibold">Spritz Reader</CardTitle>
+        <div className="flex space-x-6">
+          <NumberControl
+            label="WPM"
+            value={wpm}
+            onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
+            onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
+            min={100}
+            max={1000}
+          />
+          
+          <NumberControl
+            label="Words at a time"
+            value={wordsAtTime}
+            onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
+            onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
+            min={1}
+            max={5}
+          />
+          
+          <NumberControl
+            label="Font size"
+            value={settings.fontSize}
+            onIncrement={() => dispatch(updateNumericSetting({
+              setting: 'fontSize',
+              value: Math.min(settings.fontSize + 1, 48)
+            }))}
+            onDecrement={() => dispatch(updateNumericSetting({
+              setting: 'fontSize',
+              value: Math.max(settings.fontSize - 1, 12)
+            }))}
+            min={12}
+            max={48}
+          />
+        </div>
         <div className="flex space-x-2">
           <Button
             variant="outline"
