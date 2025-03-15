@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { toggleFocusMode } from '@/redux/slices/settingsSlice';
-import { startReading, pauseReading, setCurrentWordIndex } from '@/redux/slices/readerSlice';
+import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
+import { startReading, pauseReading, setCurrentWordIndex, setWpm, setWordsAtTime } from '@/redux/slices/readerSlice';
 import { Button } from "@/components/ui/button";
 import { X, Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NumberControl from "@/components/controls/NumberControl";
 
 export default function FocusMode() {
   const dispatch = useAppDispatch();
@@ -21,9 +22,12 @@ export default function FocusMode() {
   // State to track if controls should be visible
   const [showControls, setShowControls] = useState(true);
   const [lastMouseMove, setLastMouseMove] = useState(Date.now());
+  const [cooldownActive, setCooldownActive] = useState(false);
   
-  // Calculate progress percentage
-  const percentage = words.length > 0 ? ((currentWordIndex + 1) / words.length) * 100 : 0;
+  // Calculate progress percentage - fix to reach 100% at the end
+  const percentage = words.length <= 1 
+    ? (currentWordIndex > 0 ? 100 : 0) 
+    : (currentWordIndex / (words.length - 1)) * 100;
   
   // Background color based on theme
   const bgColor = resolvedTheme === 'dark' ? "bg-black" : "bg-white";
@@ -35,6 +39,19 @@ export default function FocusMode() {
       dispatch(pauseReading());
     } else {
       dispatch(startReading());
+      
+      // When starting to play, activate cooldown and show controls briefly
+      if (autoHideFocusControls) {
+        setShowControls(true);
+        setCooldownActive(true);
+        
+        // Hide controls after 1 second
+        setTimeout(() => {
+          setShowControls(false);
+          // End cooldown after hiding
+          setTimeout(() => setCooldownActive(false), 100);
+        }, 1000);
+      }
     }
   };
   
@@ -52,50 +69,59 @@ export default function FocusMode() {
     }
   };
   
-  // Hide controls after a delay when playing (only if auto-hide is enabled)
+  // Auto-hide controls effect - separate from initial playback
   useEffect(() => {
-    if (!isPlaying || !autoHideFocusControls) {
-      setShowControls(true);
+    // If not playing, not using auto-hide, or in cooldown, do nothing
+    if (!isPlaying || !autoHideFocusControls || cooldownActive) {
       return;
     }
     
-    const checkMouseInactive = () => {
-      const now = Date.now();
-      if (now - lastMouseMove > 2000) {
-        setShowControls(false);
-      }
-    };
-    
-    const interval = setInterval(checkMouseInactive, 500);
-    return () => clearInterval(interval);
-  }, [isPlaying, lastMouseMove, autoHideFocusControls]);
+    // Only check for inactivity if controls are showing
+    if (showControls) {
+      const checkMouseInactive = () => {
+        const now = Date.now();
+        if (now - lastMouseMove > 2000) {
+          setShowControls(false);
+        }
+      };
+      
+      const interval = setInterval(checkMouseInactive, 500);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, showControls, lastMouseMove, autoHideFocusControls, cooldownActive]);
   
-  // Show controls on mouse movement (only if auto-hide is enabled)
-  const handleMouseMove = () => {
-    if (autoHideFocusControls) {
-      setLastMouseMove(Date.now());
+  // When play state changes, handle visibility
+  useEffect(() => {
+    // When stopping, always show controls
+    if (!isPlaying) {
       setShowControls(true);
+      setCooldownActive(false);
+    }
+  }, [isPlaying]);
+  
+  // Show controls on mouse movement (only if auto-hide is enabled and not in cooldown)
+  const handleMouseMove = () => {
+    if (autoHideFocusControls && !cooldownActive) {
+      setLastMouseMove(Date.now());
+      if (!showControls) {
+        setShowControls(true);
+      }
     }
   };
   
   // Handle key press (ESC to exit, Space to toggle play/pause)
   useEffect(() => {
-    // Define the toggle function inside effect to avoid dependency issues
-    const handleTogglePlayPause = () => {
-      if (isPlaying) {
-        dispatch(pauseReading());
-      } else {
-        dispatch(startReading());
-      }
-    };
-
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         dispatch(toggleFocusMode());
       } else if (e.key === ' ' || e.code === 'Space') {
         // Prevent page scroll when pressing space
         e.preventDefault();
-        handleTogglePlayPause();
+        if (isPlaying) {
+          dispatch(pauseReading());
+        } else {
+          dispatch(startReading());
+        }
       }
     };
     
@@ -126,20 +152,43 @@ export default function FocusMode() {
       onMouseMove={handleMouseMove}
       onClick={handleContainerClick}
     >
-      {/* Header controls */}
+      {/* Header controls with editable settings */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed top-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm transition-opacity z-10">
           <div className="max-w-3xl mx-auto flex justify-between items-center">
             <div className="flex space-x-4">
-              <div className="text-sm font-medium">
-                <span className="text-muted-foreground mr-1">Speed:</span>
-                <span>{wordsAtTime > 1 ? `${wpm * wordsAtTime} words/min` : `${wpm} WPM`}</span>
-              </div>
+              <NumberControl
+                label="WPM"
+                value={wpm}
+                onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
+                onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
+                min={100}
+                max={1000}
+              />
               
-              <div className="text-sm font-medium">
-                <span className="text-muted-foreground mr-1">Words at once:</span>
-                <span>{wordsAtTime}</span>
-              </div>
+              <NumberControl
+                label="Words at a time"
+                value={wordsAtTime}
+                onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
+                onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
+                min={1}
+                max={5}
+              />
+              
+              <NumberControl
+                label="Font size"
+                value={focusModeFontSize}
+                onIncrement={() => dispatch(updateNumericSetting({
+                  setting: 'focusModeFontSize',
+                  value: Math.min(focusModeFontSize + 2, 72)
+                }))}
+                onDecrement={() => dispatch(updateNumericSetting({
+                  setting: 'focusModeFontSize',
+                  value: Math.max(focusModeFontSize - 2, 16)
+                }))}
+                min={16}
+                max={72}
+              />
             </div>
             
             <Button
@@ -157,7 +206,7 @@ export default function FocusMode() {
         </div>
       )}
 
-      {/* Clean, borderless word display in the center - directly rendering the word, not using Card */}
+      {/* Word display in the center */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
         <div 
           className={cn(
@@ -172,10 +221,7 @@ export default function FocusMode() {
           aria-live="assertive"
           aria-atomic="true"
         >
-          {/* Before text - right aligned */}
           <div className="text-right pr-0.5">{currentWord.before}</div>
-          
-          {/* Pivot letter - centered */}
           <div 
             className={cn(
               "text-center",
@@ -185,18 +231,16 @@ export default function FocusMode() {
           >
             {currentWord.pivot}
           </div>
-          
-          {/* After text - left aligned */}
           <div className="text-left pl-0.5">{currentWord.after}</div>
         </div>
       </div>
       
-      {/* Bottom controls - must be preserved */}
+      {/* Bottom controls with thinner progress bar */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-4 space-y-4">
-          {/* Seek bar */}
+          {/* Thinner seek bar */}
           <div 
-            className="relative w-full h-2 bg-secondary rounded-full overflow-hidden cursor-pointer"
+            className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden cursor-pointer"
             onClick={handleSeekBarClick}
           >
             <div 
@@ -212,7 +256,7 @@ export default function FocusMode() {
           <div className="flex justify-center gap-4">
             <Button 
               onClick={(e) => {
-                e.stopPropagation(); // Prevent click from bubbling
+                e.stopPropagation();
                 dispatch(setCurrentWordIndex(0));
               }}
               variant="ghost"
@@ -225,7 +269,7 @@ export default function FocusMode() {
             {!isPlaying ? (
               <Button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent click from bubbling
+                  e.stopPropagation();
                   dispatch(startReading());
                 }}
                 variant="ghost"
@@ -237,7 +281,7 @@ export default function FocusMode() {
             ) : (
               <Button 
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent click from bubbling
+                  e.stopPropagation();
                   dispatch(pauseReading());
                 }}
                 variant="ghost"

@@ -13,7 +13,9 @@ export default function ProgressBar({ interactive = false }) {
   const current = currentWordIndex;
   const total = words.length;
   
-  const percentage = total > 0 ? ((current + 1) / total) * 100 : 0;
+  const percentage = total <= 1 
+  ? (current > 0 ? 100 : 0) 
+  : (current / (total - 1)) * 100;
   
   // Handle click/drag on progress bar
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -59,7 +61,8 @@ export default function ProgressBar({ interactive = false }) {
         onMouseUp={handleMouseUp}
         onClick={handleProgressClick}
       >
-        <Progress value={percentage} className="w-full" />
+        {/* Make progress bar thinner with h-1.5 instead of default h-2.5 */}
+        <Progress value={percentage} className="w-full h-1.5" />
       </div>
       <div className="text-xs text-right mt-1 text-muted-foreground">
         {current + 1}/{total} words
