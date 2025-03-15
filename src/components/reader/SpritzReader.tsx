@@ -103,7 +103,7 @@ export default function SpritzReader({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <div className="flex space-x-6">
+        <div className="flex space-x-2">
           <NumberControl
             label="WPM"
             value={wpm}

@@ -32,6 +32,60 @@ if (firstWord) {
   initialState.currentWord = splitWordAtFocusPoint(firstWord, pivotIndex);
 }
 
+const getCombinedWords = (words: string[], startIndex: number, wordsAtTime: number): string => {
+  const endIndex = Math.min(startIndex + wordsAtTime, words.length);
+  return words.slice(startIndex, endIndex).join(' ');
+};
+
+const calculateMultiWordFocusPoint = (combinedText: string, pattern: HighlightPattern): number => {
+  const length = combinedText.length;
+  
+  // Find the appropriate rule from our pattern
+  for (const rule of pattern) {
+    if (length <= rule.maxLength) {
+      return rule.highlightIndex;
+    }
+  }
+  
+  // Default for very long texts
+  return Math.min(
+    pattern[pattern.length - 1]?.highlightIndex || 8,
+    Math.floor(length / 3) // Use a more reasonable default for long text
+  );
+};
+
+const splitCombinedTextAtFocusPoint = (text: string, focusIndex: number): WordParts => {
+  if (focusIndex < 0 || focusIndex >= text.length) {
+    return { before: text, pivot: '', after: '' };
+  }
+  
+  // Handle case where focus index points to a space
+  if (text[focusIndex] === ' ') {
+    // Try to use the next character, or previous if we're at the end
+    if (focusIndex < text.length - 1) {
+      focusIndex += 1;
+    } else if (focusIndex > 0) {
+      focusIndex -= 1;
+    }
+  }
+  
+  let before = text.slice(0, focusIndex);
+  const pivot = text[focusIndex] || '';
+  let after = text.slice(focusIndex + 1);
+  
+  // Replace trailing spaces in "before" with non-breaking spaces
+  if (before.endsWith(' ')) {
+    before = before.replace(/\s+$/, (match) => '\u00A0'.repeat(match.length));
+  }
+  
+  // Replace leading spaces in "after" with non-breaking spaces
+  if (after.startsWith(' ')) {
+    after = after.replace(/^\s+/, (match) => '\u00A0'.repeat(match.length));
+  }
+  
+  return { before, pivot, after };
+};
+
 export const readerSlice = createSlice({
   name: 'reader',
   initialState,
@@ -41,6 +95,13 @@ export const readerSlice = createSlice({
     },
     setWordsAtTime: (state, action: PayloadAction<number>) => {
       state.wordsAtTime = action.payload;
+      
+      // Update the current display when changing words at time setting
+      if (state.words.length > 0 && state.currentWordIndex < state.words.length) {
+        const combinedText = getCombinedWords(state.words, state.currentWordIndex, action.payload);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, state.highlightPattern);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
+      }
     },
     setWpm: (state, action: PayloadAction<number>) => {
       state.wpm = action.payload;
@@ -53,19 +114,19 @@ export const readerSlice = createSlice({
       
       // Update current word
       if (state.words.length > 0 && action.payload < state.words.length) {
-        const word = state.words[action.payload];
-        const pivotIndex = calculateFocusPoint(word, state.highlightPattern);
-        state.currentWord = splitWordAtFocusPoint(word, pivotIndex);
+        const combinedText = getCombinedWords(state.words, action.payload, state.wordsAtTime);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, state.highlightPattern);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
       }
     },
     incrementWordIndex: (state) => {
-      const newIndex = state.currentWordIndex + 1;
+      const newIndex = state.currentWordIndex + state.wordsAtTime;
       
       if (newIndex < state.words.length) {
         state.currentWordIndex = newIndex;
-        const word = state.words[newIndex];
-        const pivotIndex = calculateFocusPoint(word, state.highlightPattern);
-        state.currentWord = splitWordAtFocusPoint(word, pivotIndex);
+        const combinedText = getCombinedWords(state.words, newIndex, state.wordsAtTime);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, state.highlightPattern);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
       } else {
         // End of text reached
         state.isPlaying = false;
@@ -76,9 +137,9 @@ export const readerSlice = createSlice({
       
       // Update current word display with new pattern
       if (state.words.length > 0 && state.currentWordIndex < state.words.length) {
-        const word = state.words[state.currentWordIndex];
-        const pivotIndex = calculateFocusPoint(word, action.payload);
-        state.currentWord = splitWordAtFocusPoint(word, pivotIndex);
+        const combinedText = getCombinedWords(state.words, state.currentWordIndex, state.wordsAtTime);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, action.payload);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
       }
     },
     processText: (state) => {
@@ -87,9 +148,9 @@ export const readerSlice = createSlice({
       state.currentWordIndex = 0;
       
       if (processedWords.length > 0) {
-        const word = processedWords[0];
-        const pivotIndex = calculateFocusPoint(word, state.highlightPattern);
-        state.currentWord = splitWordAtFocusPoint(word, pivotIndex);
+        const combinedText = getCombinedWords(processedWords, 0, state.wordsAtTime);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, state.highlightPattern);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
       } else {
         state.currentWord = { before: '', pivot: '', after: '' };
       }
@@ -117,9 +178,9 @@ export const readerSlice = createSlice({
       state.currentWordIndex = 0;
       
       if (state.words.length > 0) {
-        const word = state.words[0];
-        const pivotIndex = calculateFocusPoint(word, state.highlightPattern);
-        state.currentWord = splitWordAtFocusPoint(word, pivotIndex);
+        const combinedText = getCombinedWords(state.words, 0, state.wordsAtTime);
+        const pivotIndex = calculateMultiWordFocusPoint(combinedText, state.highlightPattern);
+        state.currentWord = splitCombinedTextAtFocusPoint(combinedText, pivotIndex);
       }
     },
   },

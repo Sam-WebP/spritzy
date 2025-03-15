@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export default function FocusMode() {
   const dispatch = useAppDispatch();
-  const { currentWordIndex, words, isPlaying, currentWord } = useAppSelector((state) => state.reader);
+  const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime } = useAppSelector((state) => state.reader);
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
   
@@ -189,7 +189,7 @@ export default function FocusMode() {
             </div>
             
             <div className="text-xs text-center mt-1 text-muted-foreground">
-              {currentWordIndex + 1}/{words.length} words
+              Word {currentWordIndex + 1}-{Math.min(currentWordIndex + wordsAtTime, words.length)}/{words.length}
             </div>
             
             <div className="flex justify-center gap-4">
