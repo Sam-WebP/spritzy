@@ -12,7 +12,14 @@ import { cn } from "@/lib/utils";
 export default function FocusMode() {
   const dispatch = useAppDispatch();
   const { currentWordIndex, words, isPlaying, currentWord } = useAppSelector((state) => state.reader);
-  const { autoHideFocusControls, font, fontSize, letterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
+  const { 
+    autoHideFocusControls, 
+    focusModeFont, 
+    focusModeFontSize, 
+    focusModeLetterSpacing, 
+    showFocusLetter, 
+    showFocusBorder 
+  } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
   
   // State to track if controls should be visible
@@ -86,13 +93,13 @@ export default function FocusMode() {
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
         <div 
           className={cn(
-            font.className, 
+            focusModeFont.className, 
             textColor,
             "flex items-baseline relative"
           )}
           style={{ 
-            fontSize: `${fontSize}px`, 
-            letterSpacing: `${letterSpacing}px` 
+            fontSize: `${focusModeFontSize}px`, 
+            letterSpacing: `${focusModeLetterSpacing}px` 
           }}
           aria-live="assertive"
           aria-atomic="true"

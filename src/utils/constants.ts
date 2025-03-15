@@ -52,6 +52,7 @@ export const FONT_OPTIONS: FontOption[] = [
   { name: 'Mono', className: 'font-mono' },
   { name: 'Sans', className: 'font-sans' },
   { name: 'Serif', className: 'font-serif' },
+  { name: 'Georgia', className: 'font-georgia' },
 ];
 
 export const DEFAULT_HIGHLIGHT_PATTERN: HighlightPattern = [
@@ -82,6 +83,9 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   showFocusLetter: true,
   letterSpacing: 0,
   fontSize: 24,
+  focusModeFont: FONT_OPTIONS[2],
+  focusModeFontSize: 48,
+  focusModeLetterSpacing: 0,
   showFocusBorder: true,
   colorScheme: 'Red',
   microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,

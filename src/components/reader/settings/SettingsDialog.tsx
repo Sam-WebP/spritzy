@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, RefreshCw } from "lucide-react";
-import ThemeSettings from './ThemeSettings';
 import FontSettings from './FontSettings';
 import DisplaySettings from './DisplaySettings';
 import PatternSettings from './PatternSettings';
@@ -31,7 +30,7 @@ export default function SettingsDialog() {
           Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Reader Settings</DialogTitle>
           <DialogDescription>
@@ -39,28 +38,22 @@ export default function SettingsDialog() {
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="theme" className="mt-2">
-        <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="theme">Theme</TabsTrigger>
-          <TabsTrigger value="font">Font</TabsTrigger>
-          <TabsTrigger value="display">Display</TabsTrigger>
-          <TabsTrigger value="pattern">Pattern</TabsTrigger>
-          <TabsTrigger value="pauses">Pauses</TabsTrigger>
-        </TabsList>
-          <div className="py-4">
-            <TabsContent value="theme" className="mt-0">
-              <ThemeSettings />
+        <Tabs defaultValue="display" className="mt-2">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="display">Display</TabsTrigger>
+            <TabsTrigger value="font">Font</TabsTrigger>
+            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          </TabsList>
+          
+          <div className="py-4 h-[400px] overflow-y-auto">
+            <TabsContent value="display" className="mt-0">
+              <DisplaySettings />
             </TabsContent>
             <TabsContent value="font" className="mt-0">
               <FontSettings />
             </TabsContent>
-            <TabsContent value="display" className="mt-0">
-              <DisplaySettings />
-            </TabsContent>
-            <TabsContent value="pattern" className="mt-0">
+            <TabsContent value="advanced" className="mt-0 space-y-8">
               <PatternSettings />
-            </TabsContent>
-            <TabsContent value="pauses" className="mt-0">
               <MicroPauseSettings />
             </TabsContent>
           </div>

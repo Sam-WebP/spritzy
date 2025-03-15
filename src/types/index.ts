@@ -45,6 +45,9 @@ export interface ReaderSettings {
   showFocusLetter: boolean;
   letterSpacing: number;
   fontSize: number;
+  focusModeFont: FontOption;
+  focusModeFontSize: number;
+  focusModeLetterSpacing: number;
   showFocusBorder: boolean;
   colorScheme: string;
   microPauses: MicroPauseSettings;

@@ -13,9 +13,18 @@ export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    updateFont: (state, action: PayloadAction<string>) => {
-      const font = FONT_OPTIONS.find(f => f.name === action.payload) || DEFAULT_SETTINGS.font;
-      state.font = font;
+    updateFont: (
+      state, 
+      action: PayloadAction<{ type: 'normal' | 'focus', name: string }>
+    ) => {
+      const { type, name } = action.payload;
+      const font = FONT_OPTIONS.find(f => f.name === name) || DEFAULT_SETTINGS.font;
+      
+      if (type === 'normal') {
+        state.font = font;
+      } else {
+        state.focusModeFont = font;
+      }
     },
     toggleSetting: (state, action: PayloadAction<keyof ReaderSettings>) => {
       const setting = action.payload;
