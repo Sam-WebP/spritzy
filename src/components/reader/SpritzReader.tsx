@@ -103,7 +103,7 @@ export default function SpritzReader({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <div className="flex space-x-2">
+        <div className="flex space-x-6">
           <NumberControl
             label="WPM"
             value={wpm}
@@ -140,11 +140,11 @@ export default function SpritzReader({
         <div className="flex space-x-2">
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={() => dispatch(toggleFocusMode())}
+            aria-label="Focus Mode"
           >
-            <Maximize className="h-4 w-4 mr-2" />
-            Focus Mode
+            <Maximize className="h-4 w-4" />
           </Button>
           <ThemeToggle />
           <SettingsDialog />
