@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { COLOR_THEMES } from '@/utils/constants';
-import { ColorTheme } from '@/types';
+import { ColorTheme, ThemeColors } from '@/types';
 
 interface ThemeState {
   theme: ColorTheme;
@@ -11,11 +11,18 @@ const initialState: ThemeState = {
   theme: COLOR_THEMES[0],
   customTheme: {
     name: 'Custom',
-    background: '#ffffff',
-    containerBackground: '#ffffff',
-    text: '#374151',
-    highlightText: '#dc2626',
-    highlightBorder: '#dc2626',
+    light: {
+      background: '#ffffff',
+      text: '#374151',
+      highlightText: '#dc2626',
+      highlightBorder: '#dc2626',
+    },
+    dark: {
+      background: '#111827',
+      text: '#f3f4f6',
+      highlightText: '#ef4444',
+      highlightBorder: '#ef4444',
+    }
   },
 };
 
@@ -38,20 +45,42 @@ export const themeSlice = createSlice({
     },
     updateCustomTheme: (
       state, 
-      action: PayloadAction<{property: keyof ColorTheme, value: string}>
+      action: PayloadAction<{mode: 'light' | 'dark', property: keyof ThemeColors, value: string}>
     ) => {
-      const { property, value } = action.payload;
-      state.customTheme = {
-        ...state.customTheme,
-        [property]: value
-      };
+      const { mode, property, value } = action.payload;
       
-      // If custom theme is active, update the current theme
+      // Type-safe way of updating properties
+      switch (property) {
+        case 'background':
+          state.customTheme[mode].background = value;
+          break;
+        case 'text':
+          state.customTheme[mode].text = value;
+          break;
+        case 'highlightText':
+          state.customTheme[mode].highlightText = value;
+          break;
+        case 'highlightBorder':
+          state.customTheme[mode].highlightBorder = value;
+          break;
+      }
+      
+      // If custom theme is active, update the current theme too
       if (state.theme.name === 'Custom') {
-        state.theme = {
-          ...state.theme,
-          [property]: value
-        };
+        switch (property) {
+          case 'background':
+            state.theme[mode].background = value;
+            break;
+          case 'text':
+            state.theme[mode].text = value;
+            break;
+          case 'highlightText':
+            state.theme[mode].highlightText = value;
+            break;
+          case 'highlightBorder':
+            state.theme[mode].highlightBorder = value;
+            break;
+        }
       }
     },
     applyCustomTheme: (state) => {
