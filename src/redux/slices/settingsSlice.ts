@@ -4,7 +4,8 @@ import { DEFAULT_SETTINGS, FONT_OPTIONS, DEFAULT_MICRO_PAUSE_SETTINGS } from '@/
 
 const initialState: ReaderSettings = {
   ...DEFAULT_SETTINGS,
-  colorScheme: 'Red', // Default color scheme
+  colorScheme: 'Red',
+  focusModeActive: false,
 };
 
 export const settingsSlice = createSlice({
@@ -51,6 +52,9 @@ export const settingsSlice = createSlice({
     toggleStackPauses: (state) => {
       state.microPauses.stackPauses = !state.microPauses.stackPauses;
     },
+    toggleFocusMode: (state) => {
+      state.focusModeActive = !state.focusModeActive;
+    },
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
@@ -70,6 +74,7 @@ export const {
   toggleMicroPauses,
   toggleStackPauses,
   updateMicroPause,
+  toggleFocusMode,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

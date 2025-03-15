@@ -5,9 +5,12 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { SpritzReaderProps } from '@/types';
 import { DEFAULT_TEXT } from '@/utils/constants';
 import { setText, setWpm, processText, incrementWordIndex } from '@/redux/slices/readerSlice';
+import { toggleFocusMode } from '@/redux/slices/settingsSlice';
+import { Maximize } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import WordDisplay from './WordDisplay';
 import ReaderControls from './ReaderControls';
 import SpeedControl from './SpeedControl';
@@ -76,6 +79,14 @@ export default function SpritzReader({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-xl font-semibold">Spritz Reader</CardTitle>
         <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => dispatch(toggleFocusMode())}
+          >
+            <Maximize className="h-4 w-4 mr-2" />
+            Focus Mode
+          </Button>
           <ThemeToggle />
           <SettingsDialog />
         </div>
