@@ -61,3 +61,31 @@ export interface SpritzReaderProps {
   initialHighlightPattern?: HighlightPattern;
   onThemeChange?: (theme: ColorTheme) => void;
 }
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+}
+
+export interface QuizState {
+  currentQuiz: Quiz | null;
+  currentQuestionIndex: number;
+  userAnswers: number[]; // Index of selected answers
+  isCompleted: boolean;
+  loading: boolean;
+  error: string | null;
+  // Settings
+  apiKey: string;
+  selectedModel: string;
+  numQuestions: number;
+  showQuizDialog: boolean;
+}
