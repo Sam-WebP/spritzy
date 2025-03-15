@@ -2,7 +2,7 @@
 
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { resetQuiz } from '@/redux/slices/quizSlice';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Award, RotateCcw } from 'lucide-react';
@@ -29,12 +29,14 @@ export default function QuizResults() {
           <Award className="h-10 w-10 mr-2 text-yellow-500" />
           Quiz Results
         </CardTitle>
-        <CardDescription className="text-center text-xl">
-          Your score: {score.toFixed(0)}%
-          <div className="mt-1">
+        <div className="text-center text-xl">
+          <CardDescription>
+            Your score: {score.toFixed(0)}%
+          </CardDescription>
+          <CardDescription className="mt-1">
             {correctAnswers} out of {currentQuiz.questions.length} questions answered correctly
-          </div>
-        </CardDescription>
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">
