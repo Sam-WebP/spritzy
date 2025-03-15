@@ -80,13 +80,22 @@ export default function FocusMode() {
   
   // Handle key press (ESC to exit, Space to toggle play/pause)
   useEffect(() => {
+    // Define the toggle function inside effect to avoid dependency issues
+    const handleTogglePlayPause = () => {
+      if (isPlaying) {
+        dispatch(pauseReading());
+      } else {
+        dispatch(startReading());
+      }
+    };
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         dispatch(toggleFocusMode());
       } else if (e.key === ' ' || e.code === 'Space') {
         // Prevent page scroll when pressing space
         e.preventDefault();
-        togglePlayPause();
+        handleTogglePlayPause();
       }
     };
     

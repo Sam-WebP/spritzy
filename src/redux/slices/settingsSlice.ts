@@ -4,7 +4,6 @@ import { DEFAULT_SETTINGS, FONT_OPTIONS, DEFAULT_MICRO_PAUSE_SETTINGS } from '@/
 
 const initialState: ReaderSettings = {
   ...DEFAULT_SETTINGS,
-  colorScheme: 'Red',
   focusModeActive: false,
   autoHideFocusControls: true,
 };
@@ -71,7 +70,6 @@ export const settingsSlice = createSlice({
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
-        colorScheme: 'Red',
         microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
       };
     },

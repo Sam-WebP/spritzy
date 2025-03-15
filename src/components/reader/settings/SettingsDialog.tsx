@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Settings, RefreshCw } from "lucide-react";
 import FontSettings from './FontSettings';
 import DisplaySettings from './DisplaySettings';
@@ -45,18 +46,20 @@ export default function SettingsDialog() {
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
           </TabsList>
           
-          <div className="py-4 h-[400px] overflow-y-auto">
-            <TabsContent value="display" className="mt-0">
-              <DisplaySettings />
-            </TabsContent>
-            <TabsContent value="font" className="mt-0">
-              <FontSettings />
-            </TabsContent>
-            <TabsContent value="advanced" className="mt-0 space-y-8">
-              <PatternSettings />
-              <MicroPauseSettings />
-            </TabsContent>
-          </div>
+          <ScrollArea className="h-[400px] mt-4">
+            <div className="py-4 pr-4">
+              <TabsContent value="display" className="mt-0">
+                <DisplaySettings />
+              </TabsContent>
+              <TabsContent value="font" className="mt-0">
+                <FontSettings />
+              </TabsContent>
+              <TabsContent value="advanced" className="mt-0 space-y-8">
+                <PatternSettings />
+                <MicroPauseSettings />
+              </TabsContent>
+            </div>
+          </ScrollArea>
         </Tabs>
 
         <DialogFooter>

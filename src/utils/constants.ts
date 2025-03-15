@@ -87,7 +87,7 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   focusModeFontSize: 48,
   focusModeLetterSpacing: 0,
   showFocusBorder: true,
-  colorScheme: 'Red',
+  colorScheme: 'Blue',
   microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
   focusModeActive: false,
   autoHideFocusControls: true,
