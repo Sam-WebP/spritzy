@@ -1,11 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ReaderSettings, MicroPauseSettings } from '@/types';
 import { DEFAULT_SETTINGS, FONT_OPTIONS, DEFAULT_MICRO_PAUSE_SETTINGS } from '@/utils/constants';
+import { loadFromStorage, STORAGE_KEYS } from '@/utils/storage-utils';
+
+// Load saved settings
+const savedSettings = loadFromStorage<Partial<ReaderSettings>>(
+  STORAGE_KEYS.APP_SETTINGS, 
+  {}
+);
 
 const initialState: ReaderSettings = {
   ...DEFAULT_SETTINGS,
   focusModeActive: false,
   autoHideFocusControls: true,
+  // Override with any saved settings
+  ...savedSettings
 };
 
 export const settingsSlice = createSlice({
