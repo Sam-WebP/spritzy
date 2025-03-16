@@ -15,10 +15,6 @@ export default function FocusMode() {
   const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime, wpm } = useAppSelector((state) => state.reader);
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
-
-  // Add these hooks at the top of the FocusMode component
-  const wordContainerRef = useRef<HTMLDivElement>(null);
-  const [wordScale, setWordScale] = useState<number>(1);
   
   // Container ref to check click targets
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +33,82 @@ export default function FocusMode() {
   const bgColor = resolvedTheme === 'dark' ? "bg-black" : "bg-white";
   const textColor = resolvedTheme === 'dark' ? "text-white" : "text-black";
   
+  const [dynamicFontSize, setDynamicFontSize] = useState(focusModeFontSize);
+
+  // Function to estimate how many characters can fit on each side
+  const calculateMaxCharacters = (fontSize: number, letterSpacing: number, screenWidth: number): number => {
+    // For most fonts, average character width is roughly 0.6× font size plus letter spacing
+    const avgCharWidth = fontSize * 0.6 + letterSpacing;
+    
+    // Calculate available width on each side (half screen minus some margin)
+    const availableWidth = (screenWidth / 2) - 30; // 30px margin for safety
+    
+    // Calculate how many characters can fit
+    return Math.floor(availableWidth / avgCharWidth);
+  };
+
+  // Function to calculate optimal font size to fit the word
+  const calculateOptimalFontSize = (
+    beforeLength: number,
+    afterLength: number,
+    maxChars: number,
+    currentFontSize: number
+  ): number => {
+    // If everything fits, keep current size
+    if (beforeLength <= maxChars && afterLength <= maxChars) {
+      return currentFontSize;
+    }
+    
+    // Calculate the ratio adjustment needed based on whichever side needs more reduction
+    const ratioNeeded = Math.max(
+      beforeLength > 0 ? beforeLength / maxChars : 0,
+      afterLength > 0 ? afterLength / maxChars : 0
+    );
+    
+    // Adjust font size accordingly (with a small extra margin)
+    return Math.floor(currentFontSize / (ratioNeeded * 1.05));
+  };
+
+  // Add this effect to recalculate font size when word changes
+useEffect(() => {
+  // Get current screen width
+  const screenWidth = window.innerWidth;
+  
+  // Calculate max characters that can fit
+  const maxChars = calculateMaxCharacters(
+    focusModeFontSize,
+    focusModeLetterSpacing,
+    screenWidth
+  );
+  
+  // Calculate optimal font size for current word
+  const newFontSize = calculateOptimalFontSize(
+    currentWord.before.length,
+    currentWord.after.length,
+    maxChars,
+    focusModeFontSize
+  );
+  
+  // Update dynamic font size
+  setDynamicFontSize(newFontSize);
+  
+  // Also recalculate on window resize
+  const handleResize = () => {
+    const width = window.innerWidth;
+    const chars = calculateMaxCharacters(focusModeFontSize, focusModeLetterSpacing, width);
+    setDynamicFontSize(calculateOptimalFontSize(
+      currentWord.before.length, 
+      currentWord.after.length, 
+      chars, 
+      focusModeFontSize
+    ));
+  };
+  
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+  
+}, [currentWord, focusModeFontSize, focusModeLetterSpacing]);
+
   // Toggle play/pause
   const togglePlayPause = () => {
     if (isPlaying) {
@@ -146,37 +218,6 @@ export default function FocusMode() {
     e.stopPropagation();
   };
 
-// Add this effect to precisely calculate and apply scaling when needed
-useEffect(() => {
-  const checkAndAdjustScale = () => {
-    if (!wordContainerRef.current) return;
-    
-    const container = wordContainerRef.current;
-    
-    // First reset any existing transform to get the true width
-    container.style.transform = '';
-    
-    // Get the actual content width and the available width
-    const contentWidth = container.scrollWidth;
-    const availableWidth = container.parentElement?.clientWidth || 0;
-    
-    if (contentWidth > availableWidth && availableWidth > 0) {
-      // Calculate scale needed to fit the content (with a small margin)
-      const newScale = (availableWidth - 10) / contentWidth;
-      setWordScale(newScale);
-    } else {
-      // No scaling needed
-      setWordScale(1);
-    }
-  };
-  
-  // Check on word change and also after a slight delay to handle font loading
-  checkAndAdjustScale();
-  const timeoutId = setTimeout(checkAndAdjustScale, 50);
-  
-  return () => clearTimeout(timeoutId);
-}, [currentWord]); // Run when the word changes
-
   return (
     <div 
       ref={containerRef}
@@ -252,29 +293,20 @@ useEffect(() => {
       )}
 
       {/* Word display in the center */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
-        <div className="w-full overflow-hidden relative">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4">
+        <div className="relative flex justify-center items-center h-20">
           <div 
-            ref={wordContainerRef}
             className={cn(
               focusModeFont.className, 
               textColor,
-              "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
+              "grid grid-cols-[1fr_auto_1fr] w-full items-baseline"
             )}
             style={{ 
-              fontSize: `${focusModeFontSize}px`, 
+              fontSize: `${dynamicFontSize}px`, 
               letterSpacing: `${focusModeLetterSpacing}px`,
-              // Apply a dynamic transform to scale the content if needed
-              transform: `scale(${wordScale})`,
-              transformOrigin: 'center center',
-              // Add a max width constraint to force scaling calculation
-              maxWidth: '100%',
-              margin: '0 auto'
             }}
-            aria-live="assertive"
-            aria-atomic="true"
           >
-            <div className="text-right pr-0.5">{currentWord.before}</div>
+            <div className="text-right pr-1">{currentWord.before}</div>
             <div 
               className={cn(
                 "text-center",
@@ -284,7 +316,7 @@ useEffect(() => {
             >
               {currentWord.pivot}
             </div>
-            <div className="text-left pl-0.5">{currentWord.after}</div>
+            <div className="text-left pl-1">{currentWord.after}</div>
           </div>
         </div>
       </div>
