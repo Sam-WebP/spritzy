@@ -93,4 +93,12 @@ export const DEFAULT_SETTINGS: ReaderSettings = {
   autoHideFocusControls: true,
 };
 
-export const DEFAULT_TEXT = "Welcome to the Spritz reader. This text will be displayed one word at a time with the focus point highlighted to help you read faster. Adjust the speed using the slider below.";
+export const DEFAULT_TEXT = `Welcome to Spritzy, your gateway to enhanced reading speed and comprehension! Spritzy utilises the innovative Spritz reading method, a scientifically backed technique designed to significantly boost your reading efficiency. Whether you're consuming articles, studying material, or reviewing documents, Spritzy can help you process information 2-4x faster than conventional reading while maintaining strong comprehension.
+
+The highlighted character ensures optimal recognition of words of varying lengths. Paired with custom micro-pauses that automatically adjust pace for punctuation and complex terms, this creates a natural, fluid reading experience.
+
+Everyone reads differently; Spritzy is highly customisable, allowing you to tweak every setting to your precise liking, from speed and word highlighting to font and theme colors.
+
+Elevate your focus further with Focus Mode, an immersive full-screen experience that blocks distractions. After reading, challenge your retention with AI-generated quizzes based on your text, solidifying key concepts in seconds.
+
+Get ready to experience reading in a whole new way - faster, more efficient, and more engaging with Spritzy!`;
