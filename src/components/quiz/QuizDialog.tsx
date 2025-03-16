@@ -17,7 +17,7 @@ export default function QuizDialog() {
 
   return (
     <Dialog open={showQuizDialog} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[800px] h-[80vh] flex flex-col">
+      <DialogContent className="max-w-[800px] w-[95vw] h-[90vh] flex flex-col">
         <DialogTitle>Quiz</DialogTitle>
         <DialogDescription>
           Test your understanding of the text with these questions.

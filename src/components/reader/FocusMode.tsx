@@ -155,8 +155,8 @@ export default function FocusMode() {
       {/* Header controls with editable settings */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed top-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm transition-opacity z-10">
-          <div className="max-w-3xl mx-auto flex justify-between items-center">
-            <div className="flex space-x-4">
+          <div className="max-w-3xl mx-auto flex flex-row justify-between items-center">
+            <div className="flex flex-wrap justify-start gap-2 sm:gap-3">
               <NumberControl
                 label="WPM"
                 value={wpm}
@@ -164,19 +164,27 @@ export default function FocusMode() {
                 onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
                 min={100}
                 max={1000}
+                className="text-xs sm:text-sm"
               />
               
               <NumberControl
-                label="Words at a time"
+                label={<>
+                  <span className="hidden sm:inline">Words at a time</span>
+                  <span className="inline sm:hidden">Words</span>
+                </>}
                 value={wordsAtTime}
                 onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
                 onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
                 min={1}
                 max={5}
+                className="text-xs sm:text-sm"
               />
               
               <NumberControl
-                label="Font size"
+                label={<>
+                  <span className="hidden sm:inline">Font Size</span>
+                  <span className="inline sm:hidden">Size</span>
+                </>}
                 value={focusModeFontSize}
                 onIncrement={() => dispatch(updateNumericSetting({
                   setting: 'focusModeFontSize',
@@ -188,19 +196,21 @@ export default function FocusMode() {
                 }))}
                 min={16}
                 max={72}
+                className="text-xs sm:text-sm"
               />
             </div>
             
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(toggleFocusMode());
               }}
+              aria-label="Exit Focus Mode"
             >
-              <X className="h-4 w-4 mr-2" />
-              Exit Focus Mode
+              <X className="h-4 w-4" />
+              <span className="ml-2 hidden sm:inline">Exit Focus Mode</span>
             </Button>
           </div>
         </div>
@@ -221,7 +231,7 @@ export default function FocusMode() {
           aria-live="assertive"
           aria-atomic="true"
         >
-          <div className="text-right pr-0.5">{currentWord.before}</div>
+          <div className="text-right pr-0.5 truncate">{currentWord.before}</div>
           <div 
             className={cn(
               "text-center",
@@ -231,7 +241,7 @@ export default function FocusMode() {
           >
             {currentWord.pivot}
           </div>
-          <div className="text-left pl-0.5">{currentWord.after}</div>
+          <div className="text-left pl-0.5 truncate">{currentWord.after}</div>
         </div>
       </div>
       

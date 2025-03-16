@@ -102,8 +102,8 @@ export default function SpritzReader({
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <div className="flex space-x-6">
+      <CardHeader className="flex flex-row items-center justify-between py-2 px-3 sm:p-6">
+        <div className="flex space-x-1 sm:space-x-4">
           <NumberControl
             label="WPM"
             value={wpm}
@@ -111,19 +111,27 @@ export default function SpritzReader({
             onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
             min={100}
             max={1000}
+            className="text-xs sm:text-sm"
           />
           
           <NumberControl
-            label="Words at a time"
+            label={<>
+              <span className="hidden sm:inline">Words at a time</span>
+              <span className="inline sm:hidden">Words</span>
+            </>}
             value={wordsAtTime}
             onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
             onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
             min={1}
             max={5}
+            className="text-xs sm:text-sm"
           />
           
           <NumberControl
-            label="Font size"
+            label={<>
+              <span className="hidden sm:inline">Font Size</span>
+              <span className="inline sm:hidden">Size</span>
+            </>}
             value={settings.fontSize}
             onIncrement={() => dispatch(updateNumericSetting({
               setting: 'fontSize',
@@ -135,9 +143,10 @@ export default function SpritzReader({
             }))}
             min={12}
             max={48}
+            className="text-xs sm:text-sm"
           />
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-1 sm:space-x-2">
           <Button
             variant="outline"
             size="icon"

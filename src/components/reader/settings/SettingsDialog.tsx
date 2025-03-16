@@ -27,11 +27,15 @@ export default function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="Settings">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          aria-label="Settings"
+        >
           <Settings className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Reader Settings</DialogTitle>
           <DialogDescription>
@@ -40,15 +44,15 @@ export default function SettingsDialog() {
         </DialogHeader>
         
         <Tabs defaultValue="display" className="mt-2">
-        <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="display">Display</TabsTrigger>
-          <TabsTrigger value="font">Font</TabsTrigger>
-          <TabsTrigger value="quiz">Quiz</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
-        </TabsList>
+          <TabsList className="flex w-full h-auto flex-wrap">
+            <TabsTrigger value="display" className="flex-1 py-1 px-2">Display</TabsTrigger>
+            <TabsTrigger value="font" className="flex-1 py-1 px-2">Font</TabsTrigger>
+            <TabsTrigger value="quiz" className="flex-1 py-1 px-2">Quiz</TabsTrigger>
+            <TabsTrigger value="advanced" className="flex-1 py-1 px-2">Advanced</TabsTrigger>
+          </TabsList>
           
-          <ScrollArea className="h-[400px] mt-4">
-            <div className="py-4 pr-4">
+          <ScrollArea className="h-[calc(90vh-220px)] mt-4">
+            <div className="py-4 pr-4 pb-8">
               <TabsContent value="display" className="mt-0">
                 <DisplaySettings />
               </TabsContent>
@@ -66,7 +70,7 @@ export default function SettingsDialog() {
           </ScrollArea>
         </Tabs>
 
-        <DialogFooter>
+        <DialogFooter className="mt-2 pt-2 border-t">
           <Button 
             variant="outline" 
             size="sm" 

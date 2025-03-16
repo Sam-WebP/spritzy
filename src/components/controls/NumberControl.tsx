@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface NumberControlProps {
-  label: string;
+  label: React.ReactNode;
   value: number;
   onIncrement: () => void;
   onDecrement: () => void;
@@ -24,27 +24,27 @@ export default function NumberControl({
   className
 }: NumberControlProps) {
   return (
-    <div className={cn("flex items-center space-x-2 px-3 py-1 rounded-md", className)}>
-      <span className="text-sm text-muted-foreground whitespace-nowrap">{label}</span>
+    <div className={cn("flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 rounded-md", className)}>
+      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
       <div className="flex flex-col items-center">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-muted-foreground hover:text-foreground"
           onClick={onIncrement}
           disabled={value >= max}
         >
-          <ChevronUp className="h-4 w-4" />
+          <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
-        <span className="font-mono text-sm font-semibold">{value}</span>
+        <span className="font-mono text-xs sm:text-sm font-semibold">{value}</span>
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+          className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-muted-foreground hover:text-foreground"
           onClick={onDecrement}
           disabled={value <= min}
         >
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
       </div>
     </div>
