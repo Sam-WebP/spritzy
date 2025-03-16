@@ -15,6 +15,10 @@ export default function FocusMode() {
   const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime, wpm } = useAppSelector((state) => state.reader);
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
+
+  // Add these hooks at the top of the FocusMode component
+  const wordContainerRef = useRef<HTMLDivElement>(null);
+  const [wordScale, setWordScale] = useState<number>(1);
   
   // Container ref to check click targets
   const containerRef = useRef<HTMLDivElement>(null);
@@ -141,7 +145,38 @@ export default function FocusMode() {
     // Prevent the click from bubbling to the container
     e.stopPropagation();
   };
+
+// Add this effect to precisely calculate and apply scaling when needed
+useEffect(() => {
+  const checkAndAdjustScale = () => {
+    if (!wordContainerRef.current) return;
+    
+    const container = wordContainerRef.current;
+    
+    // First reset any existing transform to get the true width
+    container.style.transform = '';
+    
+    // Get the actual content width and the available width
+    const contentWidth = container.scrollWidth;
+    const availableWidth = container.parentElement?.clientWidth || 0;
+    
+    if (contentWidth > availableWidth && availableWidth > 0) {
+      // Calculate scale needed to fit the content (with a small margin)
+      const newScale = (availableWidth - 10) / contentWidth;
+      setWordScale(newScale);
+    } else {
+      // No scaling needed
+      setWordScale(1);
+    }
+  };
   
+  // Check on word change and also after a slight delay to handle font loading
+  checkAndAdjustScale();
+  const timeoutId = setTimeout(checkAndAdjustScale, 50);
+  
+  return () => clearTimeout(timeoutId);
+}, [currentWord]); // Run when the word changes
+
   return (
     <div 
       ref={containerRef}
@@ -218,30 +253,39 @@ export default function FocusMode() {
 
       {/* Word display in the center */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4 h-20 flex items-center justify-center">
-        <div 
-          className={cn(
-            focusModeFont.className, 
-            textColor,
-            "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
-          )}
-          style={{ 
-            fontSize: `${focusModeFontSize}px`, 
-            letterSpacing: `${focusModeLetterSpacing}px` 
-          }}
-          aria-live="assertive"
-          aria-atomic="true"
-        >
-          <div className="text-right pr-0.5 truncate">{currentWord.before}</div>
+        <div className="w-full overflow-hidden relative">
           <div 
+            ref={wordContainerRef}
             className={cn(
-              "text-center",
-              { "text-primary": showFocusLetter },
-              { "border-b-2 border-primary": showFocusBorder }
+              focusModeFont.className, 
+              textColor,
+              "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
             )}
+            style={{ 
+              fontSize: `${focusModeFontSize}px`, 
+              letterSpacing: `${focusModeLetterSpacing}px`,
+              // Apply a dynamic transform to scale the content if needed
+              transform: `scale(${wordScale})`,
+              transformOrigin: 'center center',
+              // Add a max width constraint to force scaling calculation
+              maxWidth: '100%',
+              margin: '0 auto'
+            }}
+            aria-live="assertive"
+            aria-atomic="true"
           >
-            {currentWord.pivot}
+            <div className="text-right pr-0.5">{currentWord.before}</div>
+            <div 
+              className={cn(
+                "text-center",
+                { "text-primary": showFocusLetter },
+                { "border-b-2 border-primary": showFocusBorder }
+              )}
+            >
+              {currentWord.pivot}
+            </div>
+            <div className="text-left pl-0.5">{currentWord.after}</div>
           </div>
-          <div className="text-left pl-0.5 truncate">{currentWord.after}</div>
         </div>
       </div>
       

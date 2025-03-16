@@ -49,28 +49,41 @@ export default function Quiz() {
           userAnswer={userAnswers[currentQuestionIndex]}
         />
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between gap-1 sm:gap-2">
         <Button
           variant="outline"
           onClick={() => dispatch(previousQuestion())}
           disabled={currentQuestionIndex === 0}
+          className="text-xs sm:text-sm px-2 sm:px-4"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Previous
+          <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span className="whitespace-nowrap">Previous</span>
         </Button>
-        <Button variant="outline" onClick={() => dispatch(resetQuiz())}>
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Reset
+        <Button 
+          variant="outline" 
+          onClick={() => dispatch(resetQuiz())}
+          className="text-xs sm:text-sm px-2 sm:px-4"
+        >
+          <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <span>Reset</span>
         </Button>
         {currentQuestionIndex < currentQuiz.questions.length - 1 ? (
-          <Button onClick={() => dispatch(nextQuestion())} disabled={!hasAnsweredCurrent}>
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
+          <Button 
+            onClick={() => dispatch(nextQuestion())} 
+            disabled={!hasAnsweredCurrent}
+            className="text-xs sm:text-sm px-2 sm:px-4"
+          >
+            <span>Next</span>
+            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
           </Button>
         ) : (
-          <Button onClick={() => dispatch(completeQuiz())} disabled={!allQuestionsAnswered}>
-            Finish
-            <CheckCircle2 className="h-4 w-4 ml-2" />
+          <Button 
+            onClick={() => dispatch(completeQuiz())} 
+            disabled={!allQuestionsAnswered}
+            className="text-xs sm:text-sm px-2 sm:px-4"
+          >
+            <span>Finish</span>
+            <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
           </Button>
         )}
       </CardFooter>

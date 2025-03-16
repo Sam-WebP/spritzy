@@ -25,7 +25,7 @@ export default function NumberControl({
 }: NumberControlProps) {
   return (
     <div className={cn("flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 rounded-md", className)}>
-      <span className="text-muted-foreground whitespace-nowrap">{label}</span>
+      <span className="text-muted-foreground whitespace-nowrap text-xs sm:text-sm">{label}</span>
       <div className="flex flex-col items-center">
         <Button 
           variant="ghost" 
