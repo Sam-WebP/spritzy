@@ -102,8 +102,23 @@ export default function SpritzReader({
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="flex flex-row items-center justify-between py-2 px-3 sm:p-6">
-        <div className="flex space-x-1 sm:space-x-4">
+            <CardHeader className="flex flex-col space-y-4 py-2 px-3 sm:p-6">
+        {/* Top row - Right-aligned buttons */}
+        <div className="flex justify-end space-x-1 sm:space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => dispatch(toggleFocusMode())}
+            aria-label="Focus Mode"
+          >
+            <Maximize className="h-4 w-4" />
+          </Button>
+          <ThemeToggle />
+          <SettingsDialog />
+        </div>
+
+        {/* Middle row - Centered controls */}
+        <div className="flex justify-center space-x-1 sm:space-x-4">
           <NumberControl
             label="WPM"
             value={wpm}
@@ -145,18 +160,6 @@ export default function SpritzReader({
             max={48}
             className="text-xs sm:text-sm"
           />
-        </div>
-        <div className="flex space-x-1 sm:space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => dispatch(toggleFocusMode())}
-            aria-label="Focus Mode"
-          >
-            <Maximize className="h-4 w-4" />
-          </Button>
-          <ThemeToggle />
-          <SettingsDialog />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
