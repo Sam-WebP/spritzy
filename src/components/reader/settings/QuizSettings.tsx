@@ -10,10 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Available models
 const AVAILABLE_MODELS = [
   { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
-  { id: 'openai/gpt-4', name: 'GPT-4' },
-  { id: 'anthropic/claude-instant-v1', name: 'Claude Instant' },
-  { id: 'anthropic/claude-2', name: 'Claude 2' },
-  { id: 'google/palm-2', name: 'PaLM 2' },
+  { id: 'openai/gpt-4o-2024-11-20', name: 'GPT-4o' },
+  { id: 'google/gemini-2.0-pro-exp-02-05:free', name: 'Gemini Pro 2.0' },
 ];
 
 export default function QuizSettings() {
