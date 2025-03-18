@@ -100,75 +100,77 @@ export default function SpritzReader({
   }, isPlaying ? currentDelay : null);
   
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="flex flex-col space-y-4 py-2 px-3 sm:p-6">
-        {/* Top row - Right-aligned buttons */}
-        <div className="flex justify-end space-x-1 sm:space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => dispatch(toggleFocusMode())}
-            aria-label="Focus Mode"
-          >
-            <Maximize className="h-4 w-4" />
-          </Button>
-          <ThemeToggle />
-          <SettingsDialog />
-        </div>
+    <div className="w-full max-w-2xl mx-auto">
+      <Card className="glass-effect w-full">
+        <CardHeader className="flex flex-col space-y-4 py-2 px-3 sm:p-6">
+          {/* Top row - Right-aligned buttons */}
+          <div className="flex justify-end space-x-1 sm:space-x-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => dispatch(toggleFocusMode())}
+              aria-label="Focus Mode"
+            >
+              <Maximize className="h-4 w-4" />
+            </Button>
+            <ThemeToggle />
+            <SettingsDialog />
+          </div>
 
-        {/* Middle row - Centered controls */}
-        <div className="flex justify-center">
-          <NumberControl
-            label="WPM"
-            value={wpm}
-            onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
-            onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
-            min={100}
-            max={1000}
-            className="text-xs sm:text-sm"
-          />
+          {/* Middle row - Centered controls */}
+          <div className="flex justify-center">
+            <NumberControl
+              label="WPM"
+              value={wpm}
+              onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
+              onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
+              min={100}
+              max={1000}
+              className="text-xs sm:text-sm"
+            />
+            
+            <NumberControl
+              label={"Words"}
+              value={wordsAtTime}
+              onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
+              onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
+              min={1}
+              max={5}
+              className="text-xs sm:text-sm"
+            />
+            
+            <NumberControl
+              label={"Size"}
+              value={settings.fontSize}
+              onIncrement={() => dispatch(updateNumericSetting({
+                setting: 'fontSize',
+                value: Math.min(settings.fontSize + 1, 48)
+              }))}
+              onDecrement={() => dispatch(updateNumericSetting({
+                setting: 'fontSize',
+                value: Math.max(settings.fontSize - 1, 12)
+              }))}
+              min={12}
+              max={48}
+              className="text-xs sm:text-sm"
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Word Display */}
+          <WordDisplay />
           
-          <NumberControl
-            label={"Words"}
-            value={wordsAtTime}
-            onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
-            onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
-            min={1}
-            max={5}
-            className="text-xs sm:text-sm"
-          />
+          {/* Progress indicator - moved up and made interactive */}
+          <ProgressBar interactive={true} />
           
-          <NumberControl
-            label={"Size"}
-            value={settings.fontSize}
-            onIncrement={() => dispatch(updateNumericSetting({
-              setting: 'fontSize',
-              value: Math.min(settings.fontSize + 1, 48)
-            }))}
-            onDecrement={() => dispatch(updateNumericSetting({
-              setting: 'fontSize',
-              value: Math.max(settings.fontSize - 1, 12)
-            }))}
-            min={12}
-            max={48}
-            className="text-xs sm:text-sm"
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Word Display */}
-        <WordDisplay />
-        
-        {/* Progress indicator - moved up and made interactive */}
-        <ProgressBar interactive={true} />
-        
-        {/* Controls */}
-        <ReaderControls />
-        
-        {/* Text input */}
-        <TextInput />
-      </CardContent>
-      <QuizDialog />
-    </Card>
+          {/* Controls */}
+          <ReaderControls />
+          
+          {/* Text input */}
+          <TextInput />
+        </CardContent>
+        <QuizDialog />
+      </Card>
+    </div>
   );
 }

@@ -39,7 +39,7 @@ export default function TextInput() {
   
   return (
     <div className="space-y-3">
-      <Label htmlFor="text-input">Text to Read</Label>
+      <Label htmlFor="text-input"><span className="text-muted-foreground whitespace-nowrap text-xs sm:text-sm">Text to Read</span></Label>
       <Textarea 
         id="text-input"
         value={localText} 
