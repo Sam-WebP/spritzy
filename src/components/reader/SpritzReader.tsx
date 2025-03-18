@@ -10,7 +10,6 @@ import { Maximize } from "lucide-react";
 import QuizDialog from '@/components/quiz/QuizDialog';
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import WordDisplay from './WordDisplay';
 import ReaderControls from './ReaderControls';
