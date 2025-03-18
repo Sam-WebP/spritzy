@@ -64,9 +64,6 @@ export default function ProgressBar({ interactive = false }) {
         {/* Make progress bar thinner with h-1.5 instead of default h-2.5 */}
         <Progress value={percentage} className="w-full h-1.5" />
       </div>
-      <div className="text-xs text-right mt-1 text-muted-foreground">
-        {current + 1}/{total} words
-      </div>
     </div>
   );
 }

@@ -11,15 +11,6 @@ export default function ReaderControls() {
   
   return (
     <div className="flex justify-center gap-2 mb-4">
-      <Button 
-        onClick={() => dispatch(resetReading())}
-        variant="outline"
-        size="sm"
-        aria-label="Reset reading"
-      >
-        <RotateCcw className="h-4 w-4 mr-2" /> Reset
-      </Button>
-      
       {!isPlaying ? (
         <Button 
           onClick={() => dispatch(startReading())}
@@ -39,6 +30,15 @@ export default function ReaderControls() {
           <Pause className="h-4 w-4 mr-2" /> Pause
         </Button>
       )}
+
+      <Button 
+        onClick={() => dispatch(resetReading())}
+        variant="outline"
+        size="sm"
+        aria-label="Reset reading"
+      >
+        <RotateCcw className="h-4 w-4 mr-2" /> Reset
+      </Button>
     </div>
   );
 }

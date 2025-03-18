@@ -102,7 +102,7 @@ export default function SpritzReader({
   
   return (
     <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader className="flex flex-col space-y-4 py-2 px-3 sm:p-6">
+      <CardHeader className="flex flex-col space-y-4 py-2 px-3 sm:p-6">
         {/* Top row - Right-aligned buttons */}
         <div className="flex justify-end space-x-1 sm:space-x-2">
           <Button
@@ -118,7 +118,7 @@ export default function SpritzReader({
         </div>
 
         {/* Middle row - Centered controls */}
-        <div className="flex justify-center space-x-1 sm:space-x-4">
+        <div className="flex justify-center">
           <NumberControl
             label="WPM"
             value={wpm}
@@ -130,10 +130,7 @@ export default function SpritzReader({
           />
           
           <NumberControl
-            label={<>
-              <span className="hidden sm:inline">Words at a time</span>
-              <span className="inline sm:hidden">Words</span>
-            </>}
+            label={"Words"}
             value={wordsAtTime}
             onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
             onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
@@ -143,10 +140,7 @@ export default function SpritzReader({
           />
           
           <NumberControl
-            label={<>
-              <span className="hidden sm:inline">Font Size</span>
-              <span className="inline sm:hidden">Size</span>
-            </>}
+            label={"Size"}
             value={settings.fontSize}
             onIncrement={() => dispatch(updateNumericSetting({
               setting: 'fontSize',
@@ -172,9 +166,7 @@ export default function SpritzReader({
         {/* Controls */}
         <ReaderControls />
         
-        <Separator className="my-4" />
-        
-        {/* Text input - now with more rows */}
+        {/* Text input */}
         <TextInput />
       </CardContent>
       <QuizDialog />

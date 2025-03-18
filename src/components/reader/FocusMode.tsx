@@ -340,18 +340,6 @@ useEffect(() => {
           </div>
           
           <div className="flex justify-center gap-4">
-            <Button 
-              onClick={(e) => {
-                e.stopPropagation();
-                dispatch(setCurrentWordIndex(0));
-              }}
-              variant="ghost"
-              size="sm"
-              aria-label="Reset reading"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" /> Reset
-            </Button>
-            
             {!isPlaying ? (
               <Button 
                 onClick={(e) => {
@@ -377,6 +365,18 @@ useEffect(() => {
                 <Pause className="h-4 w-4 mr-2" /> Pause
               </Button>
             )}
+
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(setCurrentWordIndex(0));
+              }}
+              variant="ghost"
+              size="sm"
+              aria-label="Reset reading"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" /> Reset
+            </Button>
           </div>
         </div>
       )}
