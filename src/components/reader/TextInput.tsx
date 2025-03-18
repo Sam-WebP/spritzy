@@ -7,7 +7,7 @@ import { toggleQuizDialog } from '@/redux/slices/quizSlice';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { debounce } from '@/utils/debounce-utils';
 
 export default function TextInput() {
@@ -52,8 +52,8 @@ export default function TextInput() {
         onClick={() => dispatch(toggleQuizDialog())}
         className="w-full sm:w-auto"
       >
-        <BookOpen className="h-4 w-4 mr-2" />
-        Take Quiz on This Text
+        <Sparkles className="h-4 w-4 mr-2" />
+        Generate Quiz
       </Button>
     </div>
   );
