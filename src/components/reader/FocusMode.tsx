@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { calculateMaxCharacters, calculateOptimalFontSize } from '@/utils/text-utils';
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
@@ -35,39 +36,6 @@ export default function FocusMode() {
   
   const [dynamicFontSize, setDynamicFontSize] = useState(focusModeFontSize);
 
-  // Function to estimate how many characters can fit on each side
-  const calculateMaxCharacters = (fontSize: number, letterSpacing: number, screenWidth: number): number => {
-    // For most fonts, average character width is roughly 0.6× font size plus letter spacing
-    const avgCharWidth = fontSize * 0.6 + letterSpacing;
-    
-    // Calculate available width on each side (half screen minus some margin)
-    const availableWidth = (screenWidth / 2) - 30; // 30px margin for safety
-    
-    // Calculate how many characters can fit
-    return Math.floor(availableWidth / avgCharWidth);
-  };
-
-  // Function to calculate optimal font size to fit the word
-  const calculateOptimalFontSize = (
-    beforeLength: number,
-    afterLength: number,
-    maxChars: number,
-    currentFontSize: number
-  ): number => {
-    // If everything fits, keep current size
-    if (beforeLength <= maxChars && afterLength <= maxChars) {
-      return currentFontSize;
-    }
-    
-    // Calculate the ratio adjustment needed based on whichever side needs more reduction
-    const ratioNeeded = Math.max(
-      beforeLength > 0 ? beforeLength / maxChars : 0,
-      afterLength > 0 ? afterLength / maxChars : 0
-    );
-    
-    // Adjust font size accordingly (with a small extra margin)
-    return Math.floor(currentFontSize / (ratioNeeded * 1.05));
-  };
 
   // Add this effect to recalculate font size when word changes
 useEffect(() => {
