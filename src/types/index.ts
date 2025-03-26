@@ -62,12 +62,30 @@ export interface SpritzReaderProps {
   onThemeChange?: (theme: ColorTheme) => void;
 }
 
-export interface QuizQuestion {
+export interface QuizOptionSelection {
+  multipleChoice: boolean;
+  typedAnswer: boolean;
+  aiGenerateCount: boolean;
+}
+
+export interface QuizQuestionBase {
   id: string;
   question: string;
+}
+
+export interface MultipleChoiceQuestion extends QuizQuestionBase {
+  type: 'multiple-choice';
   options: string[];
   correctOptionIndex: number;
 }
+
+export interface TypedAnswerQuestion extends QuizQuestionBase {
+  type: 'typed-answer';
+  correctAnswer: string;
+  context?: string;
+}
+
+export type QuizQuestion = MultipleChoiceQuestion | TypedAnswerQuestion;
 
 export interface Quiz {
   id: string;
@@ -76,16 +94,26 @@ export interface Quiz {
   questions: QuizQuestion[];
 }
 
+
+export interface QuizSettings {
+  apiKey: string;
+  selectedModel: string;
+  defaultNumQuestions: number;
+  defaultMode: QuizOptionSelection;
+}
+
 export interface QuizState {
   currentQuiz: Quiz | null;
   currentQuestionIndex: number;
-  userAnswers: number[]; // Index of selected answers
+  userAnswers: (number | string)[];
   isCompleted: boolean;
   loading: boolean;
   error: string | null;
-  // Settings
-  apiKey: string;
-  selectedModel: string;
-  numQuestions: number;
+  quizSettings: QuizSettings;
+  generationOptions?: {
+    numQuestions?: number;
+    questionTypes?: QuizOptionSelection;
+  };
   showQuizDialog: boolean;
+  showOptionsDialog: boolean;
 }

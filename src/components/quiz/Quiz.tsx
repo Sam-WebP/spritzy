@@ -19,16 +19,26 @@ export default function Quiz() {
     currentQuiz,
     currentQuestionIndex,
     userAnswers,
+    showResults,
   } = useAppSelector(state => state.quiz);
 
-  if (!currentQuiz) {
+  if (!currentQuiz || showResults) {
     return null;
   }
 
   const currentQuestion = currentQuiz.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
-  const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== -1;
-  const allQuestionsAnswered = userAnswers.every(answer => answer !== -1);
+  
+  const hasAnsweredCurrent = userAnswers[currentQuestionIndex] !== undefined && 
+                           userAnswers[currentQuestionIndex] !== -1;
+  
+  const allQuestionsAnswered = userAnswers.every(answer => 
+    answer !== undefined && answer !== -1
+  );
+
+  const handleCompleteQuiz = () => {
+    dispatch(completeQuiz());
+  };
 
   return (
     <div className="w-full">
@@ -78,7 +88,7 @@ export default function Quiz() {
           </Button>
         ) : (
           <Button 
-            onClick={() => dispatch(completeQuiz())} 
+            onClick={handleCompleteQuiz} 
             disabled={!allQuestionsAnswered}
             className="text-xs sm:text-sm px-2 sm:px-4"
           >
