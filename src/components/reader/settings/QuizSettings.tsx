@@ -1,22 +1,29 @@
 'use client';
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { setApiKey, setSelectedModel, setNumQuestions } from '@/redux/slices/quizSlice';
+import { setQuizSettings } from '@/redux/slices/quizSlice';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
-// Available models
 const AVAILABLE_MODELS = [
   { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
   { id: 'openai/gpt-4o-2024-11-20', name: 'GPT-4o' },
   { id: 'google/gemini-2.0-pro-exp-02-05:free', name: 'Gemini Pro 2.0' },
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini Flash 2.0' },
 ];
 
 export default function QuizSettings() {
   const dispatch = useAppDispatch();
-  const { apiKey, selectedModel, numQuestions } = useAppSelector(state => state.quiz);
+  const { quizSettings } = useAppSelector(state => state.quiz);
+
+  const handleDefaultModeChange = (key: keyof typeof quizSettings.defaultMode, value: boolean) => {
+    dispatch(setQuizSettings({ 
+      defaultMode: { ...quizSettings.defaultMode, [key]: value }
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -25,8 +32,8 @@ export default function QuizSettings() {
         <Input
           id="api-key"
           type="password"
-          value={apiKey}
-          onChange={(e) => dispatch(setApiKey(e.target.value))}
+          value={quizSettings.apiKey}
+          onChange={(e) => dispatch(setQuizSettings({ apiKey: e.target.value }))}
           placeholder="Enter your OpenRouter API key"
         />
         <p className="text-xs text-muted-foreground">
@@ -38,8 +45,8 @@ export default function QuizSettings() {
       <div className="space-y-2">
         <Label htmlFor="model-select">AI Model</Label>
         <Select
-          value={selectedModel}
-          onValueChange={(value) => dispatch(setSelectedModel(value))}
+          value={quizSettings.selectedModel}
+          onValueChange={(value) => dispatch(setQuizSettings({ selectedModel: value }))}
         >
           <SelectTrigger id="model-select">
             <SelectValue placeholder="Select model" />
@@ -59,18 +66,46 @@ export default function QuizSettings() {
 
       <div className="space-y-2">
         <div className="flex justify-between">
-          <Label>Number of Questions: {numQuestions}</Label>
+          <Label>Default Number of Questions: {quizSettings.defaultNumQuestions}</Label>
         </div>
         <Slider
-          value={[numQuestions]}
-          min={3}
-          max={10}
+          value={[quizSettings.defaultNumQuestions]}
+          min={1}
+          max={20}
           step={1}
-          onValueChange={([value]) => dispatch(setNumQuestions(value))}
+          onValueChange={([value]) => dispatch(setQuizSettings({ defaultNumQuestions: value }))}
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>3</span>
-          <span>10</span>
+          <span>1</span>
+          <span>20</span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <Label>Default Question Types</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="default-multiple-choice">Multiple Choice</Label>
+          <Switch
+            id="default-multiple-choice"
+            checked={quizSettings.defaultMode.multipleChoice}
+            onCheckedChange={(checked) => handleDefaultModeChange('multipleChoice', checked)}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="default-typed-answer">Typed Answer</Label>
+          <Switch
+            id="default-typed-answer"
+            checked={quizSettings.defaultMode.typedAnswer}
+            onCheckedChange={(checked) => handleDefaultModeChange('typedAnswer', checked)}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="default-ai-count">Let AI Determine Count</Label>
+          <Switch
+            id="default-ai-count"
+            checked={quizSettings.defaultMode.aiGenerateCount}
+            onCheckedChange={(checked) => handleDefaultModeChange('aiGenerateCount', checked)}
+          />
         </div>
       </div>
     </div>
