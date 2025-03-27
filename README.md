@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Spritzy - Speed Reading App 🚀
 
-## Getting Started
+![Spritzy Screenshot (Placeholder - Replace with actual screenshot)](placeholder.png)
 
-First, run the development server:
+Spritzy is a modern web application designed to help users improve their reading speed and comprehension using the innovative **Spritz** reading technique. By presenting words one at a time with an **Optimal Recognition Point (ORP)** highlighted, Spritzy minimises eye movement, allowing for faster information processing.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+It also includes AI-powered quiz generation to test comprehension after reading.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+*   **Core Spritz Reader:**
+    *   Displays text word-by-word (or multiple words at a time).
+    *   Highlights the Optimal Recognition Point (ORP) or "pivot letter" for faster recognition.
+    *   Adjustable Words Per Minute (WPM) speed control (100-1000 WPM).
+    *   Configurable number of words displayed at a time (1-5).
+    *   Text input area to paste or type custom content.
+    *   Progress bar showing reading position (interactive seeking).
+    *   Standard Play/Pause/Reset controls.
+    *   Handles text processing and word splitting.
+*   **🧠 AI-Powered Quizzes:**
+    *   Generate comprehension quizzes based on the currently loaded text using AI (via OpenRouter).
+    *   Supports **Multiple Choice** and **Typed Answer** question formats.
+    *   **AI Evaluation:** Typed answers are evaluated for correctness and semantic similarity by an AI model.
+    *   Requires an OpenRouter API key (stored locally in browser storage).
+    *   Configurable default number of questions and question types.
+    *   Option for AI to determine the optimal number of questions.
+    *   Interactive quiz interface with navigation, progress, and results display.
+*   **👓 Focus Mode:**
+    *   Immersive, full-screen reading experience to minimise distractions.
+    *   Separate font and size settings specifically for Focus Mode.
+    *   Dynamic font size adjustment to fit longer words/phrases on screen.
+    *   Optional auto-hiding controls during playback.
+    *   Easy exit using the `ESC` key or exit button.
+*   **⚙️ Customization & Settings:**
+    *   **Font:** Choose font family, size, and letter spacing for both normal and focus modes (Mono, Sans, Serif, Georgia).
+    *   **Display:** Toggle highlighting of the focus letter and/or a border beneath it.
+    *   **Theming:**
+        *   Light/Dark/System mode support (via `next-themes`).
+        *   Multiple color schemes (Red, Yellow, Blue, Default) affecting primary/accent colors.
+    *   **Micro-Pauses:** Enable and configure automatic pauses for punctuation (sentence ends, commas, etc.), long words, paragraph breaks, and large numbers to improve rhythm and comprehension. Option to stack pauses or use only the longest applicable one.
+    *   **Highlight Pattern:** Customize the algorithm for determining the pivot letter based on word length (Advanced).
+    *   **Reset:** Easily reset all settings to their defaults.
+*   **💾 Persistence:** User settings (display, font, micro-pauses, quiz defaults) are automatically saved to the browser's Local Storage.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+Follow these steps to set up and run the Spritzy project locally:
 
-To learn more about Next.js, take a look at the following resources:
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/your-username/spritzy.git # Replace with actual repo URL
+    cd spritzy
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2.  **Install Dependencies:**
+    Make sure you have Node.js (v18+) and npm installed.
+    ```bash
+    npm install
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3.  **Run the Development Server:**
+    ```bash
+    npm run dev
+    ```
+    The application will typically be available at `http://localhost:3000`.
 
-## Deploy on Vercel
+4.  **Configure AI Quiz (Optional):**
+    *   To use the AI-powered quiz generation feature, you need an API key from [OpenRouter.ai](https://openrouter.ai/).
+    *   Once the app is running, click the Settings icon (⚙️).
+    *   Navigate to the "Quiz" tab.
+    *   Paste your OpenRouter API key into the designated field.
+    *   **Note:** Your API key is stored *only* in your browser's Local Storage and is never sent to any server other than OpenRouter's API endpoint during quiz generation/evaluation.
+    *   If you don't provide an API key, the quiz feature will fall back to generating mock questions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
