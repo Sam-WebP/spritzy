@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { Quiz, QuizSettings, QuizOptionSelection } from '@/types';
+// Ensure TypedAnswerQuestion is imported if used in evaluateAllAnswers
+import { Quiz, QuizSettings, QuizOptionSelection, TypedAnswerQuestion } from '@/types';
 import { judgeTypedAnswer } from '@/utils/answer-judge';
+import { loadFromStorage, STORAGE_KEYS } from '@/utils/storage-utils';
 
 interface EvaluationResult {
   isCorrect: boolean;
@@ -16,6 +18,7 @@ interface QuizState {
   evaluating: boolean;
   error: string | null;
   quizSettings: QuizSettings;
+  // Make generationOptions optional as it might not always be set
   generationOptions?: {
     numQuestions?: number;
     questionTypes?: QuizOptionSelection;
@@ -28,6 +31,22 @@ interface QuizState {
   showResults: boolean;
 }
 
+const defaultQuizSettings: QuizSettings = {
+  apiKey: '',
+  selectedModel: 'openai/gpt-3.5-turbo',
+  defaultNumQuestions: 5,
+  defaultMode: {
+    multipleChoice: true,
+    typedAnswer: true,
+    aiGenerateCount: false,
+  },
+};
+
+const savedQuizSettings = loadFromStorage<Partial<QuizSettings>>(
+  STORAGE_KEYS.QUIZ_SETTINGS,
+  {}
+);
+
 const initialState: QuizState = {
   currentQuiz: null,
   currentQuestionIndex: 0,
@@ -37,21 +56,22 @@ const initialState: QuizState = {
   evaluating: false,
   error: null,
   quizSettings: {
-    apiKey: '',
-    selectedModel: 'openai/gpt-3.5-turbo',
-    defaultNumQuestions: 5,
+    ...defaultQuizSettings,
+    ...savedQuizSettings,
     defaultMode: {
-      multipleChoice: true,
-      typedAnswer: true,
-      aiGenerateCount: false,
-    },
+        ...defaultQuizSettings.defaultMode,
+        ...(savedQuizSettings.defaultMode || {}),
+    }
   },
+  // generationOptions start undefined
+  generationOptions: undefined,
   showQuizDialog: false,
   showOptionsDialog: false,
   evaluationResults: {},
   showResults: false,
 };
 
+// --- evaluateAllAnswers thunk remains the same ---
 export const evaluateAllAnswers = createAsyncThunk(
   'quiz/evaluateAllAnswers',
   async (_, { getState, dispatch }) => {
@@ -60,131 +80,173 @@ export const evaluateAllAnswers = createAsyncThunk(
 
     if (!currentQuiz) return;
 
+    const answersToEvaluate = currentQuiz.questions
+        .map((question, index) => ({ question, answer: userAnswers[index], index }))
+        .filter(item => item.question.type === 'typed-answer' &&
+                        item.answer !== undefined &&
+                        item.answer !== -1 &&
+                        typeof item.answer === 'string');
+
+    if (answersToEvaluate.length === 0) {
+        dispatch(showResults());
+        return;
+    }
+
     dispatch(setEvaluating(true));
 
     try {
-      // Evaluate all typed answers
-      const evaluationPromises = currentQuiz.questions
-        .map((question, index) => {
-          if (question.type === 'typed-answer' && userAnswers[index] !== undefined) {
-            return judgeTypedAnswer(
-              question,
-              userAnswers[index] as string,
-              quizSettings.apiKey,
-              quizSettings.selectedModel
-            ).then(result => ({
-              questionId: question.id,
-              result
-            }));
-          }
-          return null;
-        })
-        .filter(Boolean);
+      const evaluationPromises = answersToEvaluate.map(({ question, answer }) =>
+        judgeTypedAnswer(
+          question as TypedAnswerQuestion,
+          answer as string,
+          quizSettings.apiKey,
+          quizSettings.selectedModel
+        ).then(result => ({
+          questionId: question.id,
+          result
+        }))
+      );
 
-      const results = await Promise.all(evaluationPromises) as Array<{
-        questionId: string;
-        result: {
-          isCorrect: boolean;
-          feedback: string;
-        };
-      }>;
+      const results = await Promise.all(evaluationPromises);
 
-      // Store all evaluation results
       results.forEach(({ questionId, result }) => {
         dispatch(storeEvaluationResult({ questionId, result }));
       });
 
       dispatch(showResults());
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Evaluation error:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to evaluate one or more answers.';
+      dispatch(setError(errorMessage));
+      dispatch(showResults());
     } finally {
       dispatch(setEvaluating(false));
     }
   }
 );
 
+
 const quizSlice = createSlice({
   name: 'quiz',
   initialState,
   reducers: {
+    // --- Other reducers remain the same (setCurrentQuiz, nextQuestion, etc.) ---
     setCurrentQuiz: (state, action: PayloadAction<Quiz>) => {
-      state.currentQuiz = action.payload;
-      state.currentQuestionIndex = 0;
-      state.userAnswers = new Array(action.payload.questions.length).fill(-1);
-      state.isCompleted = false;
-      state.evaluationResults = {};
-      state.showResults = false;
-      state.showOptionsDialog = false;
-    },
-    nextQuestion: (state) => {
-      if (state.currentQuestionIndex < (state.currentQuiz?.questions.length || 0) - 1) {
-        state.currentQuestionIndex += 1;
-      }
-    },
-    previousQuestion: (state) => {
-      if (state.currentQuestionIndex > 0) {
-        state.currentQuestionIndex -= 1;
-      }
-    },
-    answerQuestion: (
-      state,
-      action: PayloadAction<{ questionIndex: number; answer: number | string }>
-    ) => {
-      state.userAnswers[action.payload.questionIndex] = action.payload.answer;
-    },
-    completeQuiz: (state) => {
-      state.isCompleted = true;
-    },
-    resetQuiz: (state) => {
-      state.currentQuiz = null;
-      state.currentQuestionIndex = 0;
-      state.userAnswers = [];
-      state.isCompleted = false;
-      state.evaluationResults = {};
-      state.showResults = false;
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setEvaluating: (state, action: PayloadAction<boolean>) => {
-      state.evaluating = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-    setQuizSettings: (state, action: PayloadAction<Partial<QuizSettings>>) => {
-      state.quizSettings = { ...state.quizSettings, ...action.payload };
-    },
-    setGenerationOptions: (
-      state,
-      action: PayloadAction<{
-        numQuestions?: number;
-        questionTypes?: QuizOptionSelection;
-      }>
-    ) => {
-      state.generationOptions = action.payload;
-    },
-    toggleQuizDialog: (state) => {
-      state.showQuizDialog = !state.showQuizDialog;
-    },
+        state.currentQuiz = action.payload;
+        state.currentQuestionIndex = 0;
+        state.userAnswers = new Array(action.payload.questions.length).fill(-1);
+        state.isCompleted = false;
+        state.evaluationResults = {};
+        state.showResults = false;
+        state.showOptionsDialog = false;
+        state.error = null;
+      },
+      nextQuestion: (state) => {
+        if (state.currentQuiz && state.currentQuestionIndex < state.currentQuiz.questions.length - 1) {
+          state.currentQuestionIndex += 1;
+        }
+      },
+      previousQuestion: (state) => {
+        if (state.currentQuestionIndex > 0) {
+          state.currentQuestionIndex -= 1;
+        }
+      },
+      answerQuestion: (
+        state,
+        action: PayloadAction<{ questionIndex: number; answer: number | string }>
+      ) => {
+         if (action.payload.questionIndex < state.userAnswers.length) {
+            state.userAnswers[action.payload.questionIndex] = action.payload.answer;
+         }
+      },
+      completeQuiz: (state) => {
+        const allAnswered = state.userAnswers.every(answer => answer !== undefined && answer !== -1);
+        if (allAnswered) {
+          state.isCompleted = true;
+        } else {
+          console.warn("Attempted to complete quiz before answering all questions.");
+          state.error = "Please answer all questions before finishing.";
+        }
+      },
+      resetQuiz: (state) => {
+        state.currentQuiz = null;
+        state.currentQuestionIndex = 0;
+        state.userAnswers = [];
+        state.isCompleted = false;
+        state.evaluationResults = {};
+        state.showResults = false;
+        state.loading = false;
+        state.evaluating = false;
+        state.error = null;
+      },
+      setLoading: (state, action: PayloadAction<boolean>) => {
+        state.loading = action.payload;
+      },
+      setEvaluating: (state, action: PayloadAction<boolean>) => {
+        state.evaluating = action.payload;
+      },
+      setError: (state, action: PayloadAction<string | null>) => {
+        state.error = action.payload;
+      },
+      setQuizSettings: (state, action: PayloadAction<Partial<QuizSettings>>) => {
+        state.quizSettings = { ...state.quizSettings, ...action.payload };
+      },
+      setGenerationOptions: (
+        state,
+        action: PayloadAction<QuizState['generationOptions']>
+      ) => {
+        state.generationOptions = {
+            ...state.generationOptions,
+            ...action.payload,
+            questionTypes: action.payload?.questionTypes
+                ? { ...(state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode), ...action.payload.questionTypes }
+                : state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode,
+        };
+      },
+      toggleQuizDialog: (state) => {
+        state.showQuizDialog = !state.showQuizDialog;
+        if (!state.showQuizDialog) {
+            Object.assign(state, {
+                ...initialState,
+                quizSettings: state.quizSettings,
+                showQuizDialog: false
+            });
+        }
+      },
+
+    // *** MODIFIED REDUCER ***
     toggleOptionsDialog: (state) => {
-      state.showOptionsDialog = !state.showOptionsDialog;
+        const opening = !state.showOptionsDialog;
+        state.showOptionsDialog = opening;
+
+        // If opening the dialog, initialize/reset generationOptions from defaults
+        if (opening) {
+            state.generationOptions = {
+                numQuestions: state.quizSettings.defaultNumQuestions,
+                // Create a distinct copy of the defaultMode object
+                questionTypes: { ...state.quizSettings.defaultMode }
+            };
+        }
+        // When closing, we don't need to do anything, the temporary
+        // generationOptions will be overwritten next time it's opened.
     },
+    // *** END MODIFIED REDUCER ***
+
     storeEvaluationResult: (
-      state,
-      action: PayloadAction<{ questionId: string; result: EvaluationResult }>
-    ) => {
-      state.evaluationResults[action.payload.questionId] = action.payload.result;
-    },
-    showResults: (state) => {
-      state.showResults = true;
-    },
+        state,
+        action: PayloadAction<{ questionId: string; result: EvaluationResult }>
+      ) => {
+        state.evaluationResults[action.payload.questionId] = action.payload.result;
+      },
+      showResults: (state) => {
+        state.showResults = true;
+      },
   },
   extraReducers: (builder) => {
     builder
       .addCase(evaluateAllAnswers.pending, (state) => {
         state.evaluating = true;
+        state.error = null;
       })
       .addCase(evaluateAllAnswers.fulfilled, (state) => {
         state.evaluating = false;
@@ -209,7 +271,7 @@ export const {
   setQuizSettings,
   setGenerationOptions,
   toggleQuizDialog,
-  toggleOptionsDialog,
+  toggleOptionsDialog, // Keep this export
   storeEvaluationResult,
   showResults,
 } = quizSlice.actions;
