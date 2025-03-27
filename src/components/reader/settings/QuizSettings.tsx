@@ -18,34 +18,61 @@ const AVAILABLE_MODELS = [
 export default function QuizSettings() {
   const dispatch = useAppDispatch();
   const { quizSettings } = useAppSelector(state => state.quiz);
+  const { defaultMode, defaultNumQuestions, apiKey, selectedModel } = quizSettings;
 
-  const handleDefaultModeChange = (key: keyof typeof quizSettings.defaultMode, value: boolean) => {
-    dispatch(setQuizSettings({ 
-      defaultMode: { ...quizSettings.defaultMode, [key]: value }
+  const handleDefaultModeChange = (key: keyof typeof defaultMode, value: boolean) => {
+    const otherIsActive = key === 'multipleChoice'
+      ? defaultMode.typedAnswer
+      : defaultMode.multipleChoice;
+
+    // Prevent disabling the last active type
+    if (!value && !otherIsActive && (key === 'multipleChoice' || key === 'typedAnswer')) {
+      return; // Don't allow unchecking the last one
+    }
+
+    dispatch(setQuizSettings({
+      defaultMode: { ...defaultMode, [key]: value }
     }));
   };
 
+  const handleNumQuestionsChange = (value: number) => {
+    // Only update if AI count is not enabled
+    if (!defaultMode.aiGenerateCount) {
+      dispatch(setQuizSettings({ defaultNumQuestions: value }));
+    }
+  };
+
+  const handleAiCountToggle = (checked: boolean) => {
+    dispatch(setQuizSettings({
+      defaultMode: { ...defaultMode, aiGenerateCount: checked }
+    }));
+  };
+
+  const isNumQuestionsDisabled = defaultMode.aiGenerateCount;
+
   return (
     <div className="space-y-6">
+      {/* API Key */}
       <div className="space-y-2">
         <Label htmlFor="api-key">OpenRouter API Key</Label>
         <Input
           id="api-key"
           type="password"
-          value={quizSettings.apiKey}
+          value={apiKey}
           onChange={(e) => dispatch(setQuizSettings({ apiKey: e.target.value }))}
           placeholder="Enter your OpenRouter API key"
         />
         <p className="text-xs text-muted-foreground">
           Your API key is stored locally and never sent to our servers.
-          Get a key at <a href="https://openrouter.ai" className="underline" target="_blank" rel="noopener">openrouter.ai</a>
+          Get a key at <a href="https://openrouter.ai" className="underline" target="_blank" rel="noopener noreferrer">openrouter.ai</a>
         </p>
       </div>
 
+      {/* AI Model */}
       <div className="space-y-2">
         <Label htmlFor="model-select">AI Model</Label>
         <Select
-          value={quizSettings.selectedModel}
+          value={selectedModel}
           onValueChange={(value) => dispatch(setQuizSettings({ selectedModel: value }))}
         >
           <SelectTrigger id="model-select">
@@ -60,20 +87,24 @@ export default function QuizSettings() {
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          Different models may have different capabilities and costs.
+          Ensure your API key has access to the selected model.
         </p>
       </div>
 
+      {/* Default Number of Questions */}
       <div className="space-y-2">
         <div className="flex justify-between">
-          <Label>Default Number of Questions: {quizSettings.defaultNumQuestions}</Label>
+          <Label className={isNumQuestionsDisabled ? "text-muted-foreground" : ""}>
+            Default Number of Questions: {isNumQuestionsDisabled ? '(AI Decides)' : defaultNumQuestions}
+          </Label>
         </div>
         <Slider
-          value={[quizSettings.defaultNumQuestions]}
+          value={[defaultNumQuestions]}
           min={1}
           max={20}
           step={1}
-          onValueChange={([value]) => dispatch(setQuizSettings({ defaultNumQuestions: value }))}
+          onValueChange={([value]) => handleNumQuestionsChange(value)}
+          disabled={isNumQuestionsDisabled}
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>1</span>
@@ -81,30 +112,36 @@ export default function QuizSettings() {
         </div>
       </div>
 
+      {/* Default Question Types */}
       <div className="space-y-4">
         <Label>Default Question Types</Label>
         <div className="flex items-center justify-between">
           <Label htmlFor="default-multiple-choice">Multiple Choice</Label>
           <Switch
             id="default-multiple-choice"
-            checked={quizSettings.defaultMode.multipleChoice}
-            onCheckedChange={(checked) => handleDefaultModeChange('multipleChoice', checked)}
+            checked={defaultMode.multipleChoice}
+            // Fix: Pass the received boolean directly
+            onCheckedChange={(isChecked) => handleDefaultModeChange('multipleChoice', isChecked)}
+            disabled={!defaultMode.multipleChoice && !defaultMode.typedAnswer} // Corrected logic for disabling
           />
         </div>
         <div className="flex items-center justify-between">
           <Label htmlFor="default-typed-answer">Typed Answer</Label>
           <Switch
             id="default-typed-answer"
-            checked={quizSettings.defaultMode.typedAnswer}
-            onCheckedChange={(checked) => handleDefaultModeChange('typedAnswer', checked)}
+            checked={defaultMode.typedAnswer}
+             // Fix: Pass the received boolean directly
+            onCheckedChange={(isChecked) => handleDefaultModeChange('typedAnswer', isChecked)}
+            disabled={!defaultMode.typedAnswer && !defaultMode.multipleChoice} // Corrected logic for disabling
           />
         </div>
         <div className="flex items-center justify-between">
           <Label htmlFor="default-ai-count">Let AI Determine Count</Label>
           <Switch
             id="default-ai-count"
-            checked={quizSettings.defaultMode.aiGenerateCount}
-            onCheckedChange={(checked) => handleDefaultModeChange('aiGenerateCount', checked)}
+            checked={defaultMode.aiGenerateCount}
+             // Fix: Pass the received boolean directly
+            onCheckedChange={handleAiCountToggle}
           />
         </div>
       </div>
