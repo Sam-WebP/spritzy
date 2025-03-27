@@ -11,17 +11,45 @@ import { Switch } from '@/components/ui/switch';
 
 export default function QuizOptions() {
   const dispatch = useAppDispatch();
-  const { showOptionsDialog, quizSettings, generationOptions } = useAppSelector(state => state.quiz);
-  const numQuestions = generationOptions?.numQuestions || quizSettings.defaultNumQuestions;
-  const questionTypes = generationOptions?.questionTypes || quizSettings.defaultMode;
+  const { showOptionsDialog, quizSettings, generationOptions: currentGenerationOptions } = useAppSelector(state => state.quiz);
+
+  // Prioritize current generation options, fall back to defaults
+  const numQuestions = currentGenerationOptions?.numQuestions ?? quizSettings.defaultNumQuestions;
+  const questionTypes = currentGenerationOptions?.questionTypes ?? quizSettings.defaultMode;
+  const isNumQuestionsDisabled = questionTypes.aiGenerateCount;
 
   const handleNumQuestionsChange = (value: number) => {
-    dispatch(setGenerationOptions({ numQuestions: value }));
+    // Only update if AI count is not enabled
+    if (!questionTypes.aiGenerateCount) {
+      dispatch(setGenerationOptions({
+        // Preserve existing options, only update numQuestions
+        ...currentGenerationOptions,
+        questionTypes: questionTypes, // Ensure current types are preserved
+        numQuestions: value
+      }));
+    }
   };
 
   const handleQuestionTypeChange = (type: keyof typeof questionTypes, value: boolean) => {
-    dispatch(setGenerationOptions({ 
+    const otherIsActive = type === 'multipleChoice'
+      ? questionTypes.typedAnswer
+      : questionTypes.multipleChoice;
+
+    // Prevent disabling the last active type (excluding aiGenerateCount)
+    if (!value && !otherIsActive && (type === 'multipleChoice' || type === 'typedAnswer')) {
+      return; // Don't allow unchecking the last one
+    }
+
+    dispatch(setGenerationOptions({
+      ...currentGenerationOptions, // Preserve other options like numQuestions
       questionTypes: { ...questionTypes, [type]: value }
+    }));
+  };
+
+  const handleAiCountToggle = (checked: boolean) => {
+    dispatch(setGenerationOptions({
+      ...currentGenerationOptions,
+      questionTypes: { ...questionTypes, aiGenerateCount: checked }
     }));
   };
 
@@ -32,8 +60,11 @@ export default function QuizOptions() {
           <DialogTitle>Quiz Generation Options</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Number of Questions */}
           <div className="space-y-2">
-            <Label htmlFor="question-count">Number of Questions</Label>
+            <Label htmlFor="question-count" className={isNumQuestionsDisabled ? "text-muted-foreground" : ""}>
+              Number of Questions {isNumQuestionsDisabled ? '(AI Decides)' : ''}
+            </Label>
             <div className="flex items-center gap-4">
               <Slider
                 value={[numQuestions]}
@@ -42,6 +73,8 @@ export default function QuizOptions() {
                 step={1}
                 onValueChange={([value]) => handleNumQuestionsChange(value)}
                 className="flex-1"
+                disabled={isNumQuestionsDisabled}
+                aria-label="Number of questions slider"
               />
               <Input
                 id="question-count"
@@ -51,10 +84,13 @@ export default function QuizOptions() {
                 type="number"
                 min={1}
                 max={20}
+                disabled={isNumQuestionsDisabled}
+                aria-label="Number of questions input"
               />
             </div>
           </div>
 
+          {/* Question Types */}
           <div className="space-y-4">
             <Label>Question Types</Label>
             <div className="flex items-center justify-between">
@@ -62,7 +98,9 @@ export default function QuizOptions() {
               <Switch
                 id="multiple-choice"
                 checked={questionTypes.multipleChoice}
-                onCheckedChange={(checked) => handleQuestionTypeChange('multipleChoice', checked)}
+                 // Fix: Pass the received boolean directly
+                onCheckedChange={(isChecked) => handleQuestionTypeChange('multipleChoice', isChecked)}
+                disabled={!questionTypes.multipleChoice && !questionTypes.typedAnswer} // Corrected logic
               />
             </div>
             <div className="flex items-center justify-between">
@@ -70,7 +108,9 @@ export default function QuizOptions() {
               <Switch
                 id="typed-answer"
                 checked={questionTypes.typedAnswer}
-                onCheckedChange={(checked) => handleQuestionTypeChange('typedAnswer', checked)}
+                 // Fix: Pass the received boolean directly
+                onCheckedChange={(isChecked) => handleQuestionTypeChange('typedAnswer', isChecked)}
+                disabled={!questionTypes.typedAnswer && !questionTypes.multipleChoice} // Corrected logic
               />
             </div>
             <div className="flex items-center justify-between">
@@ -78,7 +118,8 @@ export default function QuizOptions() {
               <Switch
                 id="ai-generate-count"
                 checked={questionTypes.aiGenerateCount}
-                onCheckedChange={(checked) => handleQuestionTypeChange('aiGenerateCount', checked)}
+                 // Fix: Pass the received boolean directly
+                onCheckedChange={handleAiCountToggle}
               />
             </div>
           </div>
