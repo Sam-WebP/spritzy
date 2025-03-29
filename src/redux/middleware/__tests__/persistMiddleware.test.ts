@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { persistMiddleware } from '../persistMiddleware';
 import type { MiddlewareAPI } from 'redux';
-// Import the actual key value for assertions if needed
-import { STORAGE_KEYS as ACTUAL_STORAGE_KEYS } from '../../../utils/storage-utils';
 
 vi.mock('../../../utils/storage-utils', () => ({
     saveToStorage: vi.fn(),

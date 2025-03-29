@@ -6,7 +6,6 @@ import {
 } from '../settingsSlice';
 import { getContrastColor } from '../../../utils/theme-utils';
 import {
-    COLOR_THEMES,
     DEFAULT_SETTINGS,
     DEFAULT_MICRO_PAUSE_SETTINGS
 } from '../../../utils/constants';

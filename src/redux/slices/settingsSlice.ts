@@ -64,20 +64,16 @@ export const settingsSlice = createSlice({
     },
     toggleSetting: (state, action: PayloadAction<keyof ReaderSettings>) => {
       const setting = action.payload;
-      if (typeof state[setting] === 'boolean') {
-        // @ts-expect-error - We've already checked that this is a boolean
+      if (setting === 'focusModeActive' || setting === 'autoHideFocusControls') {
         state[setting] = !state[setting];
       }
     },
     updateNumericSetting: (
       state,
-      action: PayloadAction<{ setting: keyof ReaderSettings, value: number }>
+      action: PayloadAction<{ setting: 'fontSize' | 'letterSpacing', value: number }>
     ) => {
       const { setting, value } = action.payload;
-      if (typeof state[setting] === 'number') {
-        // @ts-expect-error - We've already checked that this is a number
-        state[setting] = value;
-      }
+      state[setting] = value;
     },
     setColorScheme: (state, action: PayloadAction<string>) => {
       state.colorScheme = action.payload;
@@ -87,13 +83,10 @@ export const settingsSlice = createSlice({
     },
     updateMicroPause: (
       state,
-      action: PayloadAction<{ setting: keyof MicroPauseSettings, value: number }>
+      action: PayloadAction<{ setting: keyof Omit<MicroPauseSettings, 'enableMicroPauses' | 'stackPauses'>, value: number }>
     ) => {
       const { setting, value } = action.payload;
-      if (setting !== 'enableMicroPauses') {
-        // @ts-expect-error - We know these are number settings
-        state.microPauses[setting] = value;
-      }
+      state.microPauses[setting] = value;
     },
     toggleStackPauses: (state) => {
       state.microPauses.stackPauses = !state.microPauses.stackPauses;
@@ -108,16 +101,13 @@ export const settingsSlice = createSlice({
       state,
       action: PayloadAction<{
         mode: 'light' | 'dark';
-        property: keyof CustomThemeColors['light'];
+        property: 'background' | 'foreground' | 'primary';
         value: string;
       }>
     ) => {
       const { mode, property, value } = action.payload;
-      if (state.customThemeColors[mode] && property in state.customThemeColors[mode]) {
-        // @ts-ignore - We know the property exists
+      if (state.customThemeColors[mode]) {
         state.customThemeColors[mode][property] = value;
-
-        // Automatically update contrast color if primary changes
         if (property === 'primary') {
           state.customThemeColors[mode].primaryForeground = getContrastColor(value);
         }

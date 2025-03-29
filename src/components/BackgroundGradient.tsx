@@ -27,7 +27,7 @@ export default function BackgroundGradient() {
     } else {
       setGradientColor(isDarkMode ? "rgba(138,43,226,0.3)" : "rgba(120,119,198,0.3)");
     }
-  }, [colorScheme, resolvedTheme, customThemeColors?.dark?.primary, customThemeColors?.light?.primary]);
+  }, [colorScheme, resolvedTheme, customThemeColors?.dark, customThemeColors?.light]); // Updated dependencies
 
   return (
     <div className="absolute top-0 z-[-2] h-screen w-screen bg-background" style={{

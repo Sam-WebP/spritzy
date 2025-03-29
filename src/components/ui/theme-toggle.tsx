@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useAppSelector } from '@/redux/hooks';
-import { getThemeColors, applyThemeColors, removeCustomTheme, getContrastColor } from '@/utils/theme-utils';
+import { getThemeColors, applyThemeColors, removeCustomTheme } from '@/utils/theme-utils';
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
