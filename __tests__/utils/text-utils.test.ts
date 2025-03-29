@@ -20,6 +20,20 @@ describe('text-utils', () => {
         it('handles very small screen width', () => {
             expect(calculateMaxCharacters(12, 0, 100)).toBeGreaterThan(0);
         });
+
+        it('returns 0 when fontSize is 0', () => {
+            expect(calculateMaxCharacters(0, 0, 500)).toBe(0);
+        });
+
+        it('returns 0 when screenWidth is 0', () => {
+            expect(calculateMaxCharacters(12, 0, 0)).toBe(0);
+        });
+
+        it('handles negative letter spacing', () => {
+            const positiveSpacing = calculateMaxCharacters(12, 1, 500);
+            const negativeSpacing = calculateMaxCharacters(12, -1, 500);
+            expect(negativeSpacing).toBeGreaterThan(positiveSpacing);
+        });
     });
 
     describe('calculateOptimalFontSize', () => {
