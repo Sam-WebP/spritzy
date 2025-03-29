@@ -45,10 +45,33 @@ describe('readerSlice', () => {
         expect(newState.currentWordIndex).toBe(1);
     });
 
+    it('should handle negative index in setCurrentWordIndex', () => {
+        const stateWithWords = readerReducer(initialState, setText('one two three'));
+        const newState = readerReducer(stateWithWords, setCurrentWordIndex(-1));
+        expect(newState.currentWordIndex).toBe(-1);
+    });
+
+    it('should handle out-of-bounds index in setCurrentWordIndex', () => {
+        const stateWithWords = readerReducer(initialState, setText('one two three'));
+        const newState = readerReducer(stateWithWords, setCurrentWordIndex(10));
+        expect(newState.currentWordIndex).toBe(10);
+    });
+
     it('should handle incrementWordIndex', () => {
         const stateWithWords = readerReducer(initialState, setText('one two three four'));
         const newState = readerReducer(stateWithWords, incrementWordIndex());
         expect(newState.currentWordIndex).toBe(1);
+    });
+
+    it('should handle empty words array in incrementWordIndex', () => {
+        const stateWithEmptyWords = readerReducer(initialState, {
+            ...setText(''),
+            words: [],
+            isPlaying: true
+        });
+        const newState = readerReducer(stateWithEmptyWords, incrementWordIndex());
+        expect(newState.currentWordIndex).toBe(1); // Still increments index
+        expect(newState.isPlaying).toBe(false); // But stops playing
     });
 
     it('should stop playing when incrementing past end of text', () => {
@@ -73,8 +96,29 @@ describe('readerSlice', () => {
         expect(newState.currentWordIndex).toBe(0);
     });
 
+    it('should handle empty string in processText', () => {
+        const stateWithEmptyText = readerReducer(initialState, setText(''));
+        const newState = readerReducer(stateWithEmptyText, processText());
+        expect(newState.words).toEqual([]);
+        expect(newState.currentWordIndex).toBe(0);
+    });
+
+    it('should handle whitespace-only string in processText', () => {
+        const stateWithWhitespace = readerReducer(initialState, setText('   \n\t  '));
+        const newState = readerReducer(stateWithWhitespace, processText());
+        expect(newState.words).toEqual([]);
+        expect(newState.currentWordIndex).toBe(0);
+    });
+
     it('should handle setWordsAtTime', () => {
         const newState = readerReducer(initialState, setWordsAtTime(2));
         expect(newState.wordsAtTime).toBe(2);
+    });
+
+    it('should update words and index when setText is followed by processText', () => {
+        const stateAfterSetText = readerReducer(initialState, setText('new test content'));
+        const finalState = readerReducer(stateAfterSetText, processText());
+        expect(finalState.words).toEqual(['new', 'test', 'content']);
+        expect(finalState.currentWordIndex).toBe(0);
     });
 });
