@@ -51,8 +51,8 @@ const savedQuizSettings = loadFromStorage<Partial<QuizSettings>>(
   {}
 );
 
-// Define the initial state for the quiz slice
-const initialState: QuizState = {
+// Define and export the initial state for the quiz slice
+export const quizInitialState: QuizState = {
   currentQuiz: null,
   currentQuestionIndex: 0,
   userAnswers: [],
@@ -66,8 +66,8 @@ const initialState: QuizState = {
     ...savedQuizSettings,
     // Deep merge defaultMode to handle potentially partial saves
     defaultMode: {
-        ...defaultQuizSettings.defaultMode,
-        ...(savedQuizSettings.defaultMode || {}),
+      ...defaultQuizSettings.defaultMode,
+      ...(savedQuizSettings.defaultMode || {}),
     }
   },
   generationOptions: undefined, // Start with no temporary overrides
@@ -92,16 +92,16 @@ export const evaluateAllAnswers = createAsyncThunk(
 
     // Identify only the typed-answer questions that have been answered by the user
     const answersToEvaluate = currentQuiz.questions
-        .map((question, index) => ({ question, answer: userAnswers[index], index }))
-        .filter(item => item.question.type === 'typed-answer' && // Check type
-                        item.answer !== undefined &&             // Ensure answer exists
-                        item.answer !== -1 &&                   // Ensure it's not the initial state
-                        typeof item.answer === 'string');        // Ensure it's a string
+      .map((question, index) => ({ question, answer: userAnswers[index], index }))
+      .filter(item => item.question.type === 'typed-answer' && // Check type
+        item.answer !== undefined &&             // Ensure answer exists
+        item.answer !== -1 &&                   // Ensure it's not the initial state
+        typeof item.answer === 'string');        // Ensure it's a string
 
     // If there are no typed answers to evaluate, just show results immediately
     if (answersToEvaluate.length === 0) {
-        dispatch(showResults());
-        return;
+      dispatch(showResults());
+      return;
     }
 
     // Set evaluating flag and clear previous errors
@@ -151,141 +151,152 @@ export const evaluateAllAnswers = createAsyncThunk(
 // Create the Redux slice
 const quizSlice = createSlice({
   name: 'quiz',
-  initialState,
+  initialState: quizInitialState,
   reducers: {
-    /** Sets the currently active quiz, resetting progress state. */
-    setCurrentQuiz: (state, action: PayloadAction<Quiz>) => {
-        state.currentQuiz = action.payload;
-        state.currentQuestionIndex = 0;
-        // Initialize user answers array with -1 (unanswered) for each question
-        state.userAnswers = new Array(action.payload.questions.length).fill(-1);
-        state.isCompleted = false;
-        state.evaluationResults = {};
-        state.showResults = false;
-        state.showOptionsDialog = false; // Close options dialog if open
-        state.error = null; // Clear any previous errors
-        state.loading = false; // Ensure loading is off
-        state.evaluating = false; // Ensure evaluating is off
-      },
-      /** Moves to the next question if possible. */
-      nextQuestion: (state) => {
-        if (state.currentQuiz && state.currentQuestionIndex < state.currentQuiz.questions.length - 1) {
-          state.currentQuestionIndex += 1;
-        }
-      },
-      /** Moves to the previous question if possible. */
-      previousQuestion: (state) => {
-        if (state.currentQuestionIndex > 0) {
-          state.currentQuestionIndex -= 1;
-        }
-      },
-      /** Records the user's answer for a specific question. */
-      answerQuestion: (
-        state,
-        action: PayloadAction<{ questionIndex: number; answer: number | string }>
-      ) => {
-         // Ensure index is valid before updating
-         if (action.payload.questionIndex >= 0 && action.payload.questionIndex < state.userAnswers.length) {
-            state.userAnswers[action.payload.questionIndex] = action.payload.answer;
-         } else {
-             console.warn("Attempted to answer invalid question index:", action.payload.questionIndex);
-         }
-      },
-      /** Marks the quiz as completed, triggering evaluation if necessary. Checks if all questions are answered first. */
-      completeQuiz: (state) => {
-        // Verify all questions have received an answer (not -1)
-        const allAnswered = state.userAnswers.every(answer => answer !== undefined && answer !== -1);
-        if (allAnswered) {
-          state.isCompleted = true; // Mark as completed, which might trigger evaluation via useEffect
-        } else {
-          // Log a warning and set an error state if not all questions are answered
-          console.warn("Attempted to complete quiz before answering all questions.");
-          state.error = "Please answer all questions before finishing.";
-        }
-      },
-      /** Resets the entire quiz state, except for persisted settings. */
-      resetQuiz: (state) => {
+    /** Sets the currently active quiz, resetting progress state. Handles null payload to reset state. */
+    setCurrentQuiz: (state, action: PayloadAction<Quiz | null>) => {
+      if (action.payload === null) {
         state.currentQuiz = null;
         state.currentQuestionIndex = 0;
         state.userAnswers = [];
         state.isCompleted = false;
         state.evaluationResults = {};
         state.showResults = false;
-        state.loading = false; // Reset loading flags
-        state.evaluating = false;
-        state.error = null; // Clear errors
-        // Note: Does not close the main quiz dialog automatically, handled elsewhere if needed.
-      },
-      /** Sets the loading state, typically during quiz generation. */
-      setLoading: (state, action: PayloadAction<boolean>) => {
-        state.loading = action.payload;
-      },
-      /** Sets the evaluating state, during AI evaluation of typed answers. */
-      setEvaluating: (state, action: PayloadAction<boolean>) => {
-        state.evaluating = action.payload;
-      },
-      /** Sets an error message in the state. */
-      setError: (state, action: PayloadAction<string | null>) => {
-        state.error = action.payload;
-      },
-      /** Updates the persisted quiz settings. Triggers middleware to save. */
-      setQuizSettings: (state, action: PayloadAction<Partial<QuizSettings>>) => {
-        state.quizSettings = { ...state.quizSettings, ...action.payload };
-        // Middleware `persistMiddleware` will handle saving this to localStorage
-      },
-      /** Sets temporary options for the next quiz generation. */
-      setGenerationOptions: (
-        state,
-        action: PayloadAction<QuizState['generationOptions']> // Use type from state definition
-      ) => {
-        // Merge payload with existing options, ensuring deep merge for questionTypes
-        state.generationOptions = {
-            ...state.generationOptions, // Keep existing temp options not in payload
-            ...action.payload,         // Overwrite with payload options
-            // Handle questionTypes specifically: merge payload types with existing/default types
-            questionTypes: action.payload?.questionTypes
-                ? { ...(state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode), ...action.payload.questionTypes }
-                : state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode, // Fallback if not in payload
-        };
-      },
-      /** Toggles the visibility of the main quiz dialog. Resets quiz state if closing. */
-      toggleQuizDialog: (state) => {
-        state.showQuizDialog = !state.showQuizDialog;
-        // If dialog is being closed, reset the quiz state to initial values (keeping settings)
-        if (!state.showQuizDialog) {
-            Object.assign(state, {
-                ...initialState, // Reset all fields to initial state
-                quizSettings: state.quizSettings, // Explicitly retain current settings
-                showQuizDialog: false // Ensure dialog is marked closed
-            });
-        }
-      },
+        state.error = null;
+        return;
+      }
+
+      state.currentQuiz = action.payload;
+      state.currentQuestionIndex = 0;
+      // Initialize user answers array with -1 (unanswered) for each question
+      state.userAnswers = new Array(action.payload.questions.length).fill(-1);
+      state.isCompleted = false;
+      state.evaluationResults = {};
+      state.showResults = false;
+      state.showOptionsDialog = false; // Close options dialog if open
+      state.error = null; // Clear any previous errors
+      state.loading = false; // Ensure loading is off
+      state.evaluating = false; // Ensure evaluating is off
+    },
+    /** Moves to the next question if possible. */
+    nextQuestion: (state) => {
+      if (state.currentQuiz && state.currentQuestionIndex < state.currentQuiz.questions.length - 1) {
+        state.currentQuestionIndex += 1;
+      }
+    },
+    /** Moves to the previous question if possible. */
+    previousQuestion: (state) => {
+      if (state.currentQuestionIndex > 0) {
+        state.currentQuestionIndex -= 1;
+      }
+    },
+    /** Records the user's answer for a specific question. */
+    answerQuestion: (
+      state,
+      action: PayloadAction<{ questionIndex: number; answer: number | string }>
+    ) => {
+      // Ensure index is valid before updating
+      if (action.payload.questionIndex >= 0 && action.payload.questionIndex < state.userAnswers.length) {
+        state.userAnswers[action.payload.questionIndex] = action.payload.answer;
+      } else {
+        console.warn("Attempted to answer invalid question index:", action.payload.questionIndex);
+      }
+    },
+    /** Marks the quiz as completed, triggering evaluation if necessary. Checks if all questions are answered first. */
+    completeQuiz: (state) => {
+      // Verify all questions have received an answer (not -1)
+      const allAnswered = state.userAnswers.every((answer: number | string | undefined) => answer !== undefined && answer !== -1);
+      if (allAnswered) {
+        state.isCompleted = true; // Mark as completed, which might trigger evaluation via useEffect
+      } else {
+        // Log a warning and set an error state if not all questions are answered
+        console.warn("Attempted to complete quiz before answering all questions.");
+        state.error = "Please answer all questions before finishing.";
+      }
+    },
+    /** Resets the entire quiz state, except for persisted settings. */
+    resetQuiz: (state) => {
+      state.currentQuiz = null;
+      state.currentQuestionIndex = 0;
+      state.userAnswers = [];
+      state.isCompleted = false;
+      state.evaluationResults = {};
+      state.showResults = false;
+      state.loading = false; // Reset loading flags
+      state.evaluating = false;
+      state.error = null; // Clear errors
+      // Note: Does not close the main quiz dialog automatically, handled elsewhere if needed.
+    },
+    /** Sets the loading state, typically during quiz generation. */
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    /** Sets the evaluating state, during AI evaluation of typed answers. */
+    setEvaluating: (state, action: PayloadAction<boolean>) => {
+      state.evaluating = action.payload;
+    },
+    /** Sets an error message in the state. */
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    /** Updates the persisted quiz settings. Triggers middleware to save. */
+    setQuizSettings: (state, action: PayloadAction<Partial<QuizSettings>>) => {
+      state.quizSettings = { ...state.quizSettings, ...action.payload };
+      // Middleware `persistMiddleware` will handle saving this to localStorage
+    },
+    /** Sets temporary options for the next quiz generation. */
+    setGenerationOptions: (
+      state,
+      action: PayloadAction<QuizState['generationOptions']> // Use type from state definition
+    ) => {
+      // Merge payload with existing options, ensuring deep merge for questionTypes
+      state.generationOptions = {
+        ...state.generationOptions, // Keep existing temp options not in payload
+        ...action.payload,         // Overwrite with payload options
+        // Handle questionTypes specifically: merge payload types with existing/default types
+        questionTypes: action.payload?.questionTypes
+          ? { ...(state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode), ...action.payload.questionTypes }
+          : state.generationOptions?.questionTypes ?? defaultQuizSettings.defaultMode, // Fallback if not in payload
+      };
+    },
+    /** Toggles the visibility of the main quiz dialog. Resets quiz state if closing. */
+    toggleQuizDialog: (state) => {
+      state.showQuizDialog = !state.showQuizDialog;
+      // If dialog is being closed, reset the quiz state to initial values (keeping settings)
+      if (!state.showQuizDialog) {
+        Object.assign(state, {
+          ...quizInitialState, // Reset all fields to initial state
+          quizSettings: state.quizSettings, // Explicitly retain current settings
+          showQuizDialog: false // Ensure dialog is marked closed
+        });
+      }
+    },
     /** Toggles the visibility of the quiz generation options dialog. Resets temp options if opening. */
     toggleOptionsDialog: (state) => {
-        const opening = !state.showOptionsDialog; // Is the dialog about to open?
-        state.showOptionsDialog = opening; // Update visibility state
+      const opening = !state.showOptionsDialog; // Is the dialog about to open?
+      state.showOptionsDialog = opening; // Update visibility state
 
-        // If opening the dialog, reset the temporary generationOptions based on current defaults
-        if (opening) {
-            state.generationOptions = {
-                numQuestions: state.quizSettings.defaultNumQuestions,
-                // Create a *new* object copy of defaultMode to avoid modifying defaults directly
-                questionTypes: { ...state.quizSettings.defaultMode }
-            };
-        }
-        // No action needed when closing, temp options are inherently temporary
+      // If opening the dialog, reset the temporary generationOptions based on current defaults
+      if (opening) {
+        state.generationOptions = {
+          numQuestions: state.quizSettings.defaultNumQuestions,
+          // Create a *new* object copy of defaultMode to avoid modifying defaults directly
+          questionTypes: { ...state.quizSettings.defaultMode }
+        };
+      }
+      // No action needed when closing, temp options are inherently temporary
     },
     /** Stores the evaluation result for a specific typed question. */
     storeEvaluationResult: (
-        state,
-        action: PayloadAction<{ questionId: string; result: EvaluationResult }>
-      ) => {
-        state.evaluationResults[action.payload.questionId] = action.payload.result;
-      },
-      /** Sets the flag to display the quiz results view. */
-      showResults: (state) => {
-        state.showResults = true;
-      },
+      state,
+      action: PayloadAction<{ questionId: string; result: EvaluationResult }>
+    ) => {
+      state.evaluationResults[action.payload.questionId] = action.payload.result;
+    },
+    /** Sets the flag to display the quiz results view. */
+    showResults: (state) => {
+      state.showResults = true;
+    },
   },
   // Handle async actions from `evaluateAllAnswers` thunk
   extraReducers: (builder) => {
