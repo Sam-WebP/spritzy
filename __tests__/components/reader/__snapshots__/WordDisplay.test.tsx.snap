@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WordDisplay > handles empty word parts gracefully 1`] = `
+<div
+  class="rounded-lg border text-card-foreground shadow-sm h-20 bg-background"
+>
+  <div
+    class="h-full flex items-center justify-center p-2"
+  >
+    <div
+      aria-atomic="true"
+      aria-live="assertive"
+      class="w-full"
+    />
+  </div>
+</div>
+`;
+
+exports[`WordDisplay > handles null currentWord gracefully 1`] = `
+<div
+  class="rounded-lg border text-card-foreground shadow-sm h-20 bg-background"
+>
+  <div
+    class="h-full flex items-center justify-center p-2"
+  />
+</div>
+`;
