@@ -52,6 +52,12 @@ export function hexToRgba(hex: string | undefined, opacity: number): string {
     const g = parseInt(normalizedHex.slice(2, 4), 16);
     const b = parseInt(normalizedHex.slice(4, 6), 16);
 
+    // Check for NaN values
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+      console.warn(`Invalid hex value "${hex}" resulted in NaN, returning default.`);
+      return `rgba(0, 0, 0, ${opacity})`;
+    }
+
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   } catch {
     return `rgba(0, 0, 0, ${opacity})`;
