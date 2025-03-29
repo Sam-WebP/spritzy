@@ -10,12 +10,14 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { COLOR_THEMES } from '@/utils/constants';
-import { 
+import {
   getThemeColors,
   applyThemeColors,
   removeCustomTheme,
-  SystemTheme 
+  SystemTheme
 } from '@/utils/theme-utils';
+import { Input } from "@/components/ui/input";
+import { updateCustomColor } from '@/redux/slices/settingsSlice';
 
 export default function DisplaySettings() {
   const dispatch = useAppDispatch();
@@ -25,25 +27,37 @@ export default function DisplaySettings() {
 
   // Apply theme whenever light/dark mode or color scheme changes
   useEffect(() => {
-    if (settings.colorScheme && settings.colorScheme !== 'Default') {
+    if (settings.colorScheme === 'Custom') {
+      // Apply custom theme colors directly
+      const colors = isDarkMode
+        ? settings.customThemeColors.dark
+        : settings.customThemeColors.light;
+      applyThemeColors(colors);
+    } else if (settings.colorScheme && settings.colorScheme !== 'Default') {
       const colors = getThemeColors(settings.colorScheme, isDarkMode);
       applyThemeColors(colors);
     } else {
       removeCustomTheme();
     }
-  }, [settings.colorScheme, isDarkMode]);
-  
+  }, [settings.colorScheme, isDarkMode, settings.customThemeColors]);
+
   // Handle system theme change (light/dark)
   const handleSystemThemeChange = (theme: SystemTheme) => {
     setTheme(theme);
   };
-  
+
   // Handle color scheme selection
   const handleColorSchemeChange = (schemeName: string) => {
     dispatch(setColorScheme(schemeName));
-    
+
     if (schemeName === 'Default') {
       removeCustomTheme();
+    } else if (schemeName === 'Custom') {
+      // Apply current custom colors
+      const colors = isDarkMode
+        ? settings.customThemeColors.dark
+        : settings.customThemeColors.light;
+      applyThemeColors(colors, true);
     } else {
       const colors = getThemeColors(schemeName, isDarkMode);
       applyThemeColors(colors);
@@ -55,7 +69,7 @@ export default function DisplaySettings() {
       {/* Color Scheme Section */}
       <div className="space-y-4">
         <Label className="text-base">Theme Options</Label>
-        
+
         {/* Light/Dark Mode Toggle */}
         <div className="flex flex-col space-y-2">
           <Label className="text-sm">Choose Theme Mode</Label>
@@ -69,20 +83,20 @@ export default function DisplaySettings() {
               <Sun className="h-4 w-4 mr-2" />
               Light
             </Button>
-            
+
             <Button
               variant="outline"
-              size="sm" 
+              size="sm"
               className={systemTheme === "dark" ? "border-primary" : ""}
               onClick={() => handleSystemThemeChange('dark')}
             >
               <Moon className="h-4 w-4 mr-2" />
               Dark
             </Button>
-            
+
             <Button
               variant="outline"
-              size="sm" 
+              size="sm"
               className={systemTheme === "system" ? "border-primary" : ""}
               onClick={() => handleSystemThemeChange('system')}
             >
@@ -90,7 +104,7 @@ export default function DisplaySettings() {
             </Button>
           </div>
         </div>
-        
+
         {/* Color Scheme Selection */}
         <div className="space-y-2">
           <Label className="text-sm">Choose Color Scheme</Label>
@@ -104,29 +118,120 @@ export default function DisplaySettings() {
                 onClick={() => handleColorSchemeChange(theme.name)}
               >
                 <div className="flex items-center">
-                  <div 
-                    className="w-3 h-3 rounded-full mr-1" 
-                    style={{ backgroundColor: theme.light.highlightText }} 
+                  <div
+                    className="w-3 h-3 rounded-full mr-1"
+                    style={{ backgroundColor: theme.light.primary }}
                   />
-                  <div 
-                    className="w-3 h-3 rounded-full mr-2" 
-                    style={{ backgroundColor: theme.dark.highlightText }} 
+                  <div
+                    className="w-3 h-3 rounded-full mr-2"
+                    style={{ backgroundColor: theme.dark.primary }}
                   />
                   {theme.name}
                 </div>
               </Button>
             ))}
-            
+
             <Button
               variant="outline"
               size="sm"
-              className={settings.colorScheme === "Default" ? "border-primary" : ""}
-              onClick={() => handleColorSchemeChange('Default')}
+              className={settings.colorScheme === "Custom" ? "border-primary" : ""}
+              onClick={() => handleColorSchemeChange('Custom')}
             >
-              System Default
+              Custom
             </Button>
           </div>
         </div>
+
+        {/* Custom Color Inputs */}
+        {settings.colorScheme === 'Custom' && (
+          <div className="mt-4 space-y-4 border-t pt-4">
+            <Label className="text-base">Custom Colors</Label>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm">Light Mode</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <Label htmlFor="light-bg">Background</Label>
+                  <Input
+                    id="light-bg"
+                    type="color"
+                    value={settings.customThemeColors.light.background}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'light',
+                      property: 'background',
+                      value: e.target.value
+                    }))}
+                  />
+
+                  <Label htmlFor="light-fg">Text</Label>
+                  <Input
+                    id="light-fg"
+                    type="color"
+                    value={settings.customThemeColors.light.foreground}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'light',
+                      property: 'foreground',
+                      value: e.target.value
+                    }))}
+                  />
+
+                  <Label htmlFor="light-primary">Primary</Label>
+                  <Input
+                    id="light-primary"
+                    type="color"
+                    value={settings.customThemeColors.light.primary}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'light',
+                      property: 'primary',
+                      value: e.target.value
+                    }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm">Dark Mode</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <Label htmlFor="dark-bg">Background</Label>
+                  <Input
+                    id="dark-bg"
+                    type="color"
+                    value={settings.customThemeColors.dark.background}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'dark',
+                      property: 'background',
+                      value: e.target.value
+                    }))}
+                  />
+
+                  <Label htmlFor="dark-fg">Text</Label>
+                  <Input
+                    id="dark-fg"
+                    type="color"
+                    value={settings.customThemeColors.dark.foreground}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'dark',
+                      property: 'foreground',
+                      value: e.target.value
+                    }))}
+                  />
+
+                  <Label htmlFor="dark-primary">Primary</Label>
+                  <Input
+                    id="dark-primary"
+                    type="color"
+                    value={settings.customThemeColors.dark.primary}
+                    onChange={(e) => dispatch(updateCustomColor({
+                      mode: 'dark',
+                      property: 'primary',
+                      value: e.target.value
+                    }))}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <Separator className="my-4" />
@@ -144,7 +249,7 @@ export default function DisplaySettings() {
             />
             <Label htmlFor="show-focus">Highlight Focus Letter</Label>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Switch
               id="show-border"
@@ -161,7 +266,7 @@ export default function DisplaySettings() {
       {/* Focus Mode Section */}
       <div className="space-y-4">
         <Label className="text-base">Focus Mode Settings</Label>
-        
+
         <div className="grid grid-cols-1 gap-4">
           {/* Auto-hide controls toggle */}
           <div className="flex items-center space-x-2">

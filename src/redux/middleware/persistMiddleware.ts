@@ -12,6 +12,7 @@ const PERSISTED_ACTIONS: string[] = [
   'settings/toggleSetting',
   'settings/updateNumericSetting',
   'settings/setColorScheme',
+  'settings/updateCustomColor',
   'settings/toggleMicroPauses',
   'settings/updateMicroPause',
   'settings/toggleStackPauses',

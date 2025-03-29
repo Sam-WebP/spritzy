@@ -5,45 +5,45 @@ export const COLOR_THEMES: ColorTheme[] = [
     name: 'Red',
     light: {
       background: '#ffffff',
-      text: '#374151',
-      highlightText: '#dc2626',
-      highlightBorder: '#dc2626',
+      foreground: '#374151',
+      primary: '#dc2626',
+      primaryForeground: '#ffffff',
     },
     dark: {
       background: '#111827',
-      text: '#f3f4f6',
-      highlightText: '#ef4444',
-      highlightBorder: '#ef4444',
+      foreground: '#f3f4f6',
+      primary: '#ef4444',
+      primaryForeground: '#ffffff',
     }
   },
   {
     name: 'Yellow',
     light: {
       background: '#fefce8',
-      text: '#422006',
-      highlightText: '#ca8a04',
-      highlightBorder: '#ca8a04',
+      foreground: '#422006',
+      primary: '#ca8a04',
+      primaryForeground: '#000000',
     },
     dark: {
-      background: '#1f2937', 
-      text: '#e5e7eb',
-      highlightText: '#facc15',
-      highlightBorder: '#facc15',
+      background: '#1f2937',
+      foreground: '#e5e7eb',
+      primary: '#facc15',
+      primaryForeground: '#000000',
     }
   },
   {
     name: 'Blue',
     light: {
       background: '#eff6ff',
-      text: '#1e3a8a',
-      highlightText: '#2563eb',
-      highlightBorder: '#2563eb',
+      foreground: '#1e3a8a',
+      primary: '#2563eb',
+      primaryForeground: '#ffffff',
     },
     dark: {
       background: '#0f172a',
-      text: '#e2e8f0',
-      highlightText: '#3b82f6',
-      highlightBorder: '#3b82f6',
+      foreground: '#e2e8f0',
+      primary: '#3b82f6',
+      primaryForeground: '#ffffff',
     }
   },
 ];
@@ -78,8 +78,11 @@ export const DEFAULT_MICRO_PAUSE_SETTINGS: MicroPauseSettings = {
 };
 
 export const DEFAULT_SETTINGS: ReaderSettings = {
-  theme: COLOR_THEMES[0],
   font: FONT_OPTIONS[0],
+  customThemeColors: {
+    light: COLOR_THEMES[0].light,
+    dark: COLOR_THEMES[0].dark
+  },
   showFocusLetter: true,
   letterSpacing: 0,
   fontSize: 24,

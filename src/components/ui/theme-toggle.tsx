@@ -15,26 +15,24 @@ export function ThemeToggle() {
   // Avoid hydration mismatch
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
-  
+
   const isDarkMode = resolvedTheme === 'dark';
 
   return (
-    <Button 
-      variant="outline" 
-      size="icon" 
+    <Button
+      variant="outline"
+      size="icon"
       onClick={() => {
         // Toggle theme
         const newMode = isDarkMode ? 'light' : 'dark';
         setTheme(newMode);
-        
+
         // Reapply color scheme for the new mode if one is selected
-        if (colorScheme && colorScheme !== 'Default') {
+        if (colorScheme === 'Custom') {
+          // Custom theme will be handled by the DisplaySettings component's useEffect
+          return;
+        } else if (colorScheme && colorScheme !== 'Default') {
           const colors = getThemeColors(colorScheme, !isDarkMode);
-          
-          // Only update primary color, not borders
-          document.documentElement.style.setProperty('--primary-custom', colors.highlightText);
-          document.documentElement.style.setProperty('--primary-foreground-custom', getContrastColor(colors.highlightText));
-          
           applyThemeColors(colors);
         } else {
           removeCustomTheme();
@@ -42,8 +40,8 @@ export function ThemeToggle() {
       }}
       aria-label="Toggle theme"
     >
-      {isDarkMode ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : 
-                   <Moon className="h-[1.2rem] w-[1.2rem]" />}
+      {isDarkMode ? <Sun className="h-[1.2rem] w-[1.2rem]" /> :
+        <Moon className="h-[1.2rem] w-[1.2rem]" />}
     </Button>
   );
 }

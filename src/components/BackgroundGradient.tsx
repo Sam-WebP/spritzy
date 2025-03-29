@@ -8,23 +8,26 @@ import { hexToRgba } from '@/utils/color-utils';
 
 export default function BackgroundGradient() {
   const { resolvedTheme } = useTheme();
-  const { colorScheme } = useAppSelector(state => state.settings);
-  const { theme } = useAppSelector(state => state.theme);
+  const { colorScheme, customThemeColors } = useAppSelector(state => state.settings);
   const [gradientColor, setGradientColor] = useState("rgba(255, 255, 255, 0.01)");
 
   useEffect(() => {
     const isDarkMode = resolvedTheme === 'dark';
 
-    if (colorScheme === 'Custom' && theme.name === 'Custom') {
-      const color = isDarkMode ? theme.dark.highlightText : theme.light.highlightText;
-      setGradientColor(hexToRgba(color, 0.3));
+    if (colorScheme === 'Custom') {
+      const colors = isDarkMode
+        ? customThemeColors?.dark
+        : customThemeColors?.light;
+      if (colors?.primary) {
+        setGradientColor(hexToRgba(colors.primary, 0.3));
+      }
     } else if (colorScheme && colorScheme !== 'Default') {
       const colors = getThemeColors(colorScheme, isDarkMode);
-      setGradientColor(hexToRgba(colors.highlightText, 0.3));
+      setGradientColor(hexToRgba(colors?.primary, 0.3));
     } else {
       setGradientColor(isDarkMode ? "rgba(138,43,226,0.3)" : "rgba(120,119,198,0.3)");
     }
-  }, [colorScheme, resolvedTheme, theme]);
+  }, [colorScheme, resolvedTheme, customThemeColors?.dark?.primary, customThemeColors?.light?.primary]);
 
   return (
     <div className="absolute top-0 z-[-2] h-screen w-screen bg-background" style={{

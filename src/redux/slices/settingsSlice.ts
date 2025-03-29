@@ -1,11 +1,28 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReaderSettings, MicroPauseSettings } from '@/types';
+import { ReaderSettings, MicroPauseSettings, CustomThemeColors } from '@/types';
 import { DEFAULT_SETTINGS, FONT_OPTIONS, DEFAULT_MICRO_PAUSE_SETTINGS } from '@/utils/constants';
 import { loadFromStorage, STORAGE_KEYS } from '@/utils/storage-utils';
+import { getContrastColor } from '@/utils/theme-utils';
+
+// Define default custom colors
+const defaultCustomColors: CustomThemeColors = {
+  light: {
+    background: '#ffffff',
+    foreground: '#111827',
+    primary: '#3b82f6',
+    primaryForeground: getContrastColor('#3b82f6'),
+  },
+  dark: {
+    background: '#111827',
+    foreground: '#f3f4f6',
+    primary: '#60a5fa',
+    primaryForeground: getContrastColor('#60a5fa'),
+  }
+};
 
 // Load saved settings
 const savedSettings = loadFromStorage<Partial<ReaderSettings>>(
-  STORAGE_KEYS.APP_SETTINGS, 
+  STORAGE_KEYS.APP_SETTINGS,
   {}
 );
 
@@ -14,7 +31,18 @@ const initialState: ReaderSettings = {
   focusModeActive: false,
   autoHideFocusControls: true,
   // Override with any saved settings
-  ...savedSettings
+  ...savedSettings,
+  // Merge saved custom colors with defaults
+  customThemeColors: {
+    light: {
+      ...defaultCustomColors.light,
+      ...(savedSettings.customThemeColors?.light || {}),
+    },
+    dark: {
+      ...defaultCustomColors.dark,
+      ...(savedSettings.customThemeColors?.dark || {}),
+    },
+  },
 };
 
 export const settingsSlice = createSlice({
@@ -22,12 +50,12 @@ export const settingsSlice = createSlice({
   initialState,
   reducers: {
     updateFont: (
-      state, 
+      state,
       action: PayloadAction<{ type: 'normal' | 'focus', name: string }>
     ) => {
       const { type, name } = action.payload;
       const font = FONT_OPTIONS.find(f => f.name === name) || DEFAULT_SETTINGS.font;
-      
+
       if (type === 'normal') {
         state.font = font;
       } else {
@@ -42,8 +70,8 @@ export const settingsSlice = createSlice({
       }
     },
     updateNumericSetting: (
-      state, 
-      action: PayloadAction<{setting: keyof ReaderSettings, value: number}>
+      state,
+      action: PayloadAction<{ setting: keyof ReaderSettings, value: number }>
     ) => {
       const { setting, value } = action.payload;
       if (typeof state[setting] === 'number') {
@@ -59,7 +87,7 @@ export const settingsSlice = createSlice({
     },
     updateMicroPause: (
       state,
-      action: PayloadAction<{setting: keyof MicroPauseSettings, value: number}>
+      action: PayloadAction<{ setting: keyof MicroPauseSettings, value: number }>
     ) => {
       const { setting, value } = action.payload;
       if (setting !== 'enableMicroPauses') {
@@ -76,10 +104,33 @@ export const settingsSlice = createSlice({
     toggleFocusControlsHiding: (state) => {
       state.autoHideFocusControls = !state.autoHideFocusControls;
     },
+    updateCustomColor: (
+      state,
+      action: PayloadAction<{
+        mode: 'light' | 'dark';
+        property: keyof CustomThemeColors['light'];
+        value: string;
+      }>
+    ) => {
+      const { mode, property, value } = action.payload;
+      if (state.customThemeColors[mode] && property in state.customThemeColors[mode]) {
+        // @ts-ignore - We know the property exists
+        state.customThemeColors[mode][property] = value;
+
+        // Automatically update contrast color if primary changes
+        if (property === 'primary') {
+          state.customThemeColors[mode].primaryForeground = getContrastColor(value);
+        }
+      }
+    },
     resetSettings: () => {
       return {
         ...DEFAULT_SETTINGS,
         microPauses: DEFAULT_MICRO_PAUSE_SETTINGS,
+        customThemeColors: {
+          light: { ...defaultCustomColors.light },
+          dark: { ...defaultCustomColors.dark }
+        },
       };
     },
   },
@@ -96,6 +147,7 @@ export const {
   updateMicroPause,
   toggleFocusMode,
   toggleFocusControlsHiding,
+  updateCustomColor,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

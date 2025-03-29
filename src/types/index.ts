@@ -7,9 +7,14 @@ export type HighlightPattern = HighlightRule[];
 
 export interface ThemeColors {
   background: string;
-  text: string;
-  highlightText: string;
-  highlightBorder: string;
+  foreground: string;
+  primary: string;
+  primaryForeground: string;
+}
+
+export interface CustomThemeColors {
+  light: ThemeColors;
+  dark: ThemeColors;
 }
 
 export interface ColorTheme {
@@ -40,8 +45,8 @@ export interface MicroPauseSettings {
 }
 
 export interface ReaderSettings {
-  theme: ColorTheme;
   font: FontOption;
+  customThemeColors: CustomThemeColors;
   showFocusLetter: boolean;
   letterSpacing: number;
   fontSize: number;
