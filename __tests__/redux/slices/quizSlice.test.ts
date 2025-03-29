@@ -13,34 +13,9 @@ import quizReducer, {
     toggleQuizDialog,
     toggleOptionsDialog,
     storeEvaluationResult,
-    showResults
+    showResults,
+    quizInitialState
 } from '@/redux/slices/quizSlice';
-
-// Recreate the initial state locally since it's not exported
-const quizInitialState = {
-    currentQuiz: null,
-    currentQuestionIndex: 0,
-    userAnswers: [],
-    isCompleted: false,
-    loading: false,
-    evaluating: false,
-    error: null,
-    quizSettings: {
-        apiKey: '',
-        selectedModel: 'openai/gpt-3.5-turbo',
-        defaultNumQuestions: 5,
-        defaultMode: {
-            multipleChoice: true,
-            typedAnswer: true,
-            aiGenerateCount: false
-        }
-    },
-    generationOptions: undefined,
-    showQuizDialog: false,
-    showOptionsDialog: false,
-    evaluationResults: {},
-    showResults: false
-};
 import { describe, it, expect } from 'vitest';
 import type { Quiz, QuizSettings, QuizOptionSelection } from '@/types';
 
@@ -84,6 +59,18 @@ describe('quizSlice', () => {
             expect(newState.userAnswers).toEqual([-1]); // Array length matches question count
             expect(newState.isCompleted).toBe(false);
             expect(newState.evaluationResults).toEqual({});
+        });
+
+        it('should reset state when payload is null', () => {
+            const stateWithQuiz = {
+                ...quizInitialState,
+                currentQuiz: sampleQuiz,
+                currentQuestionIndex: 1,
+                userAnswers: [1],
+                isCompleted: true
+            };
+            const newState = quizReducer(stateWithQuiz, setCurrentQuiz(null));
+            expect(newState).toEqual(quizInitialState);
         });
     });
 
@@ -195,6 +182,17 @@ describe('quizSlice', () => {
             expect(newState.isCompleted).toBe(false);
             expect(newState.error).toBe("Please answer all questions before finishing.");
         });
+
+        it('should handle null currentQuiz gracefully', () => {
+            const stateWithoutQuiz = {
+                ...quizInitialState,
+                currentQuiz: null,
+                userAnswers: []
+            };
+            const newState = quizReducer(stateWithoutQuiz, completeQuiz());
+            expect(newState.isCompleted).toBe(true); // Still marks as completed
+            expect(newState.error).toBeNull();
+        });
     });
 
     describe('setLoading', () => {
@@ -256,11 +254,21 @@ describe('quizSlice', () => {
             const stateWithQuiz = {
                 ...quizInitialState,
                 currentQuiz: sampleQuiz,
+                currentQuestionIndex: 1,
+                userAnswers: [1],
+                isCompleted: true,
+                evaluationResults: { 'q1': { isCorrect: true, feedback: 'Correct' } },
+                showResults: true,
                 showQuizDialog: true
             };
             const newState = quizReducer(stateWithQuiz, toggleQuizDialog());
             expect(newState.showQuizDialog).toBe(false);
             expect(newState.currentQuiz).toBeNull();
+            expect(newState.currentQuestionIndex).toBe(0);
+            expect(newState.userAnswers).toEqual([]);
+            expect(newState.isCompleted).toBe(false);
+            expect(newState.evaluationResults).toEqual({});
+            expect(newState.showResults).toBe(false);
         });
     });
 
@@ -289,6 +297,65 @@ describe('quizSlice', () => {
             expect(newState.generationOptions?.numQuestions).toBe(
                 quizInitialState.quizSettings.defaultNumQuestions
             );
+            expect(newState.generationOptions?.questionTypes).toEqual(
+                quizInitialState.quizSettings.defaultMode
+            );
+        });
+    });
+
+    describe('resetQuiz', () => {
+        it('should reset all quiz state fields', () => {
+            const stateWithData = {
+                ...quizInitialState,
+                currentQuiz: sampleQuiz,
+                currentQuestionIndex: 1,
+                userAnswers: [1],
+                isCompleted: true,
+                loading: true,
+                evaluating: true,
+                error: 'Test error',
+                evaluationResults: { 'q1': { isCorrect: true, feedback: 'Correct' } },
+                showResults: true
+            };
+            const newState = quizReducer(stateWithData, resetQuiz());
+            expect(newState).toEqual({
+                ...quizInitialState,
+                quizSettings: stateWithData.quizSettings // Settings should persist
+            });
+        });
+    });
+
+    describe('setEvaluating', () => {
+        it('should set evaluating state', () => {
+            const newState = quizReducer(quizInitialState, setEvaluating(true));
+            expect(newState.evaluating).toBe(true);
+        });
+    });
+
+    describe('storeEvaluationResult', () => {
+        it('should store evaluation result for a question', () => {
+            const result = { isCorrect: true, feedback: 'Correct answer' };
+            const newState = quizReducer(quizInitialState,
+                storeEvaluationResult({ questionId: 'q1', result }));
+            expect(newState.evaluationResults.q1).toEqual(result);
+        });
+
+        it('should update existing evaluation result', () => {
+            const initialState = {
+                ...quizInitialState,
+                evaluationResults: { 'q1': { isCorrect: false, feedback: 'Incorrect' } }
+            };
+            const result = { isCorrect: true, feedback: 'Correct answer' };
+            const newState = quizReducer(initialState,
+                storeEvaluationResult({ questionId: 'q1', result }));
+            expect(newState.evaluationResults.q1).toEqual(result);
+        });
+    });
+
+    describe('showResults', () => {
+        it('should set showResults to true', () => {
+            const newState = quizReducer(quizInitialState, showResults());
+            expect(newState.showResults).toBe(true);
         });
     });
 });
