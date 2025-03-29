@@ -24,6 +24,29 @@ describe('spritz-algorithm', () => {
         it('handles empty string', () => {
             expect(calculateFocusPoint('', DEFAULT_HIGHLIGHT_PATTERN)).toBe(0);
         });
+
+        it('handles words with lengths matching pattern boundaries', () => {
+            expect(calculateFocusPoint('abcd', DEFAULT_HIGHLIGHT_PATTERN)).toBe(0); // 4 letters
+            expect(calculateFocusPoint('abcdef', DEFAULT_HIGHLIGHT_PATTERN)).toBe(1); // 6 letters
+            expect(calculateFocusPoint('abcdefgh', DEFAULT_HIGHLIGHT_PATTERN)).toBe(2); // 8 letters
+            expect(calculateFocusPoint('abcdefghi', DEFAULT_HIGHLIGHT_PATTERN)).toBe(3); // 9 letters
+        });
+
+        it('handles very short words explicitly', () => {
+            expect(calculateFocusPoint('a', DEFAULT_HIGHLIGHT_PATTERN)).toBe(0);
+            expect(calculateFocusPoint('an', DEFAULT_HIGHLIGHT_PATTERN)).toBe(0);
+        });
+
+        it('respects custom highlight patterns', () => {
+            const customPattern = [
+                { maxLength: 3, highlightIndex: 0 },
+                { maxLength: 6, highlightIndex: 1 },
+                { maxLength: Infinity, highlightIndex: 2 }
+            ];
+            expect(calculateFocusPoint('cat', customPattern)).toBe(0);
+            expect(calculateFocusPoint('hello', customPattern)).toBe(1);
+            expect(calculateFocusPoint('elephant', customPattern)).toBe(2);
+        });
     });
 
     describe('splitWordAtFocusPoint', () => {
@@ -75,6 +98,28 @@ describe('spritz-algorithm', () => {
 
         it('handles punctuation', () => {
             expect(processTextIntoWords('Hello, world!')).toEqual(['Hello,', 'world!']);
+        });
+
+        it('handles leading/trailing punctuation', () => {
+            expect(processTextIntoWords('"Hello", (world)!')).toEqual(['"Hello",', '(world)!']);
+            expect(processTextIntoWords('...ellipsis')).toEqual(['...ellipsis']);
+        });
+
+        it('handles mid-word punctuation', () => {
+            expect(processTextIntoWords("it's well-being")).toEqual(["it's", 'well-being']);
+        });
+
+        it('handles multiple punctuation marks', () => {
+            expect(processTextIntoWords('Wow!!! Really??')).toEqual(['Wow!!!', 'Really??']);
+        });
+
+        it('handles numbers', () => {
+            expect(processTextIntoWords('Chapter 1, page 2')).toEqual(['Chapter', '1,', 'page', '2']);
+        });
+
+        it('handles different whitespace characters', () => {
+            // Current implementation only splits on single spaces
+            expect(processTextIntoWords('Hello world new line')).toEqual(['Hello', 'world', 'new', 'line']);
         });
     });
 });
