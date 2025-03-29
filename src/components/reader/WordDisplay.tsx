@@ -1,12 +1,21 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/redux/hooks';
+import { DEFAULT_SETTINGS } from '@/utils/constants';
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export default function WordDisplay() {
   const { currentWord } = useAppSelector(state => state.reader);
   const settings = useAppSelector(state => state.settings);
+  const [displayedFontSize, setDisplayedFontSize] = useState(DEFAULT_SETTINGS.fontSize);
+  const [displayedLetterSpacing, setDisplayedLetterSpacing] = useState(DEFAULT_SETTINGS.letterSpacing);
+
+  useEffect(() => {
+    setDisplayedFontSize(settings.fontSize);
+    setDisplayedLetterSpacing(settings.letterSpacing);
+  }, [settings.fontSize, settings.letterSpacing]);
 
   if (!currentWord) {
     return (
@@ -30,8 +39,8 @@ export default function WordDisplay() {
               "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"
             )}
             style={{
-              fontSize: `${settings.fontSize}px`,
-              letterSpacing: `${settings.letterSpacing}px`
+              fontSize: `${displayedFontSize}px`,
+              letterSpacing: `${displayedLetterSpacing}px`
             }}
             aria-live="assertive"
             aria-atomic="true"

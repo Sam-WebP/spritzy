@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { DEFAULT_SETTINGS } from '@/utils/constants';
 import { SpritzReaderProps } from '@/types';
 import { DEFAULT_TEXT } from '@/utils/constants';
 import { setText, setWpm, processText, incrementWordIndex, startReading, pauseReading, setWordsAtTime } from '@/redux/slices/readerSlice';
@@ -29,32 +30,40 @@ export default function SpritzReader({
   const dispatch = useAppDispatch();
   const { isPlaying, wpm, words, text, currentWordIndex, wordsAtTime } = useAppSelector(state => state.reader);
   const settings = useAppSelector(state => state.settings);
-  
+  const [displayedFontSize, setDisplayedFontSize] = useState(DEFAULT_SETTINGS.fontSize);
+
   // Add state for the current word delay
   const [currentDelay, setCurrentDelay] = useState<number>(60000 / wpm);
-  
+
   // Initialize with props if provided
   useEffect(() => {
     dispatch(setText(initialText));
     dispatch(setWpm(initialWpm));
     dispatch(processText());
   }, [dispatch, initialText, initialWpm]);
-  
+
   // Notify parent component about theme changes
   useEffect(() => {
     if (onThemeChange) {
-      onThemeChange(settings.theme);
+      onThemeChange(settings.colorScheme);
     }
-  }, [settings.theme, onThemeChange]);
-  
+  }, [settings.colorScheme, onThemeChange]);
+
+  // Sync font size with Redux after mount
+  useEffect(() => {
+    if (settings.fontSize !== displayedFontSize) {
+      setDisplayedFontSize(settings.fontSize);
+    }
+  }, [settings.fontSize]);
+
   // Calculate micro-pause-adjusted delay
   useEffect(() => {
     if (words.length === 0) return;
-    
+
     const baseDelay = 60000 / wpm;
     const currentWord = words[currentWordIndex];
     const nextWord = currentWordIndex < words.length - 1 ? words[currentWordIndex + 1] : null;
-    
+
     const factor = calculateMicroPauseFactor(
       currentWord,
       nextWord || '',
@@ -63,7 +72,7 @@ export default function SpritzReader({
       words,
       settings.microPauses
     );
-    
+
     setCurrentDelay(baseDelay * factor);
   }, [currentWordIndex, wpm, words, text, settings.microPauses]);
 
@@ -72,9 +81,9 @@ export default function SpritzReader({
       if ((e.key === ' ' || e.code === 'Space') && !e.repeat) {
         // Prevent default only when we handle it (avoid interfering with input fields)
         const activeElement = document.activeElement;
-        const isTextField = activeElement instanceof HTMLInputElement || 
-                            activeElement instanceof HTMLTextAreaElement;
-        
+        const isTextField = activeElement instanceof HTMLInputElement ||
+          activeElement instanceof HTMLTextAreaElement;
+
         if (!isTextField) {
           e.preventDefault();
           if (isPlaying) {
@@ -85,7 +94,7 @@ export default function SpritzReader({
         }
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyPress);
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
@@ -98,7 +107,7 @@ export default function SpritzReader({
       dispatch(incrementWordIndex());
     }
   }, isPlaying ? currentDelay : null);
-  
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <Card className="glass-effect w-full">
@@ -128,7 +137,7 @@ export default function SpritzReader({
               max={1000}
               className="text-xs sm:text-sm"
             />
-            
+
             <NumberControl
               label={"Words"}
               value={wordsAtTime}
@@ -138,10 +147,10 @@ export default function SpritzReader({
               max={5}
               className="text-xs sm:text-sm"
             />
-            
+
             <NumberControl
               label={"Size"}
-              value={settings.fontSize}
+              value={displayedFontSize}
               onIncrement={() => dispatch(updateNumericSetting({
                 setting: 'fontSize',
                 value: Math.min(settings.fontSize + 1, 48)
@@ -159,13 +168,13 @@ export default function SpritzReader({
         <CardContent className="space-y-4">
           {/* Word Display */}
           <WordDisplay />
-          
+
           {/* Progress indicator - moved up and made interactive */}
           <ProgressBar interactive={true} />
-          
+
           {/* Controls */}
           <ReaderControls />
-          
+
           {/* Text input */}
           <TextInput />
         </CardContent>

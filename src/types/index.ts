@@ -64,7 +64,7 @@ export interface SpritzReaderProps {
   initialWpm?: number;
   initialText?: string;
   initialHighlightPattern?: HighlightPattern;
-  onThemeChange?: (theme: ColorTheme) => void;
+  onThemeChange?: (theme: string) => void;
 }
 
 export interface QuizOptionSelection {
