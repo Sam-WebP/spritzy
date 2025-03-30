@@ -70,7 +70,7 @@ export const settingsSlice = createSlice({
     },
     updateNumericSetting: (
       state,
-      action: PayloadAction<{ setting: 'fontSize' | 'letterSpacing', value: number }>
+      action: PayloadAction<{ setting: 'fontSize' | 'letterSpacing' | 'focusModeFontSize' | 'focusModeLetterSpacing', value: number }>
     ) => {
       const { setting, value } = action.payload;
       state[setting] = value;
