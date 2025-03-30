@@ -47,21 +47,16 @@ export default function DisplaySettings() {
   };
 
   // Handle color scheme selection
-  const handleColorSchemeChange = (schemeName: string) => {
-    dispatch(setColorScheme(schemeName));
+  const handleColorSchemeChange = (newSchemeName: string) => {
+    const currentSchemeName = settings.colorScheme;
 
-    if (schemeName === 'Default') {
+    if (currentSchemeName === 'Custom' && newSchemeName !== 'Custom') {
       removeCustomTheme();
-    } else if (schemeName === 'Custom') {
-      // Apply current custom colors
-      const colors = isDarkMode
-        ? settings.customThemeColors.dark
-        : settings.customThemeColors.light;
-      applyThemeColors(colors, true);
-    } else {
-      const colors = getThemeColors(schemeName, isDarkMode);
-      applyThemeColors(colors);
     }
+
+    // Dispatch the action to update the Redux state
+    // The useEffect will handle applying the correct theme
+    dispatch(setColorScheme(newSchemeName));
   };
 
   return (
