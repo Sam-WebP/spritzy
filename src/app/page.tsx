@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { TextHoverEffect } from '@/components/ui/text-hover-effect';
 import { useAppSelector } from '@/redux/hooks';
 import SpritzReader from '@/components/reader/SpritzReader';
-import type { RootState } from '@/redux/store';
 import FocusMode from '@/components/reader/FocusMode';
 import BackgroundGradient from '@/components/BackgroundGradient';
 
@@ -15,7 +15,7 @@ export default function Home() {
       {focusModeActive && <FocusMode />}
       <BackgroundGradient />
       <motion.main
-        className="min-h-screen py-10 px-4"
+        className="min-h-screen py-6 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -26,14 +26,14 @@ export default function Home() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <motion.h1
-            className={`text-5xl font-black tracking-wide text-center mb-8 ${useAppSelector((state: RootState) => state.settings.font.className)}`}
+          <motion.div
+            className="mb-4"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            Sp<span className="text-primary">r</span>itzy
-          </motion.h1>
+            <TextHoverEffect text="Sprtizy" automatic={true} />
+          </motion.div>
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
