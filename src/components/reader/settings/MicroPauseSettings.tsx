@@ -12,7 +12,7 @@ export default function MicroPauseSettings() {
   const { microPauses } = useAppSelector(state => state.settings);
 
   const handleUpdatePause = (setting: keyof MicroPauseSettingsType, value: number) => {
-    if (setting !== 'enableMicroPauses') {
+    if (setting !== 'enableMicroPauses' && setting !== 'stackPauses') {
       dispatch(updateMicroPause({ setting, value }));
     }
   };
@@ -40,8 +40,8 @@ export default function MicroPauseSettings() {
             <div className="flex flex-col">
               <Label htmlFor="stack-pauses">Stack Multiple Pauses</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                {microPauses.stackPauses 
-                  ? "Multiple pauses will combine (e.g., comma + long word = longer pause)" 
+                {microPauses.stackPauses
+                  ? "Multiple pauses will combine (e.g., comma + long word = longer pause)"
                   : "Only the largest applicable pause is used"}
               </p>
             </div>
