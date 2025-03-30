@@ -8,12 +8,12 @@ import { Sun, Moon } from "lucide-react";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setColorScheme } from '@/redux/slices/settingsSlice';
 import { COLOR_THEMES } from '@/utils/constants';
-import { 
+import {
   getThemeColors,
   applyThemeColors,
   removeCustomTheme,
   getContrastColor,
-  SystemTheme 
+  SystemTheme
 } from '@/utils/theme-utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -22,7 +22,7 @@ export default function ThemeSettings() {
   const dispatch = useAppDispatch();
   const { colorScheme } = useAppSelector(state => state.settings);
   const isDarkMode = resolvedTheme === 'dark';
-  
+
   // Apply theme whenever light/dark mode or color scheme changes
   useEffect(() => {
     if (colorScheme && colorScheme !== 'Default') {
@@ -32,24 +32,24 @@ export default function ThemeSettings() {
       removeCustomTheme();
     }
   }, [colorScheme, isDarkMode]);
-  
+
   // Handle system theme change (light/dark)
   const handleSystemThemeChange = (theme: SystemTheme) => {
     setTheme(theme);
   };
-  
+
   // Handle color scheme selection
   const handleColorSchemeChange = (schemeName: string) => {
     dispatch(setColorScheme(schemeName));
-    
+
     if (schemeName === 'Default') {
       removeCustomTheme();
     } else {
       const colors = getThemeColors(schemeName, isDarkMode);
-      
-      document.documentElement.style.setProperty('--primary-custom', colors.highlightText);
-      document.documentElement.style.setProperty('--primary-foreground-custom', getContrastColor(colors.highlightText));
-      
+
+      document.documentElement.style.setProperty('--primary-custom', colors.primary);
+      document.documentElement.style.setProperty('--primary-foreground-custom', getContrastColor(colors.primary));
+
       applyThemeColors(colors);
     }
   };
@@ -61,7 +61,7 @@ export default function ThemeSettings() {
           <TabsTrigger value="system">Light/Dark Mode</TabsTrigger>
           <TabsTrigger value="colorScheme">Color Scheme</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="system" className="mt-4">
           <div className="flex flex-col space-y-2">
             <Label className="text-base">Choose Theme Mode</Label>
@@ -75,20 +75,20 @@ export default function ThemeSettings() {
                 <Sun className="h-4 w-4 mr-2" />
                 Light
               </Button>
-              
+
               <Button
                 variant="outline"
-                size="sm" 
+                size="sm"
                 className={systemTheme === "dark" ? "border-primary" : ""}
                 onClick={() => handleSystemThemeChange('dark')}
               >
                 <Moon className="h-4 w-4 mr-2" />
                 Dark
               </Button>
-              
+
               <Button
                 variant="outline"
-                size="sm" 
+                size="sm"
                 className={systemTheme === "system" ? "border-primary" : ""}
                 onClick={() => handleSystemThemeChange('system')}
               >
@@ -98,7 +98,7 @@ export default function ThemeSettings() {
             </div>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="colorScheme" className="mt-4">
           <div className="space-y-4">
             <Label className="text-base">Choose Color Scheme</Label>
@@ -112,19 +112,19 @@ export default function ThemeSettings() {
                   onClick={() => handleColorSchemeChange(theme.name)}
                 >
                   <div className="flex items-center">
-                    <div 
-                      className="w-3 h-3 rounded-full mr-1" 
-                      style={{ backgroundColor: theme.light.highlightText }} 
+                    <div
+                      className="w-3 h-3 rounded-full mr-1"
+                      style={{ backgroundColor: theme.light.primary }}
                     />
-                    <div 
-                      className="w-3 h-3 rounded-full mr-2" 
-                      style={{ backgroundColor: theme.dark.highlightText }} 
+                    <div
+                      className="w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: theme.dark.primary }}
                     />
                     {theme.name}
                   </div>
                 </Button>
               ))}
-              
+
               <Button
                 variant="outline"
                 size="sm"
