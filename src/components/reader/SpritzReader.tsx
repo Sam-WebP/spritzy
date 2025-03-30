@@ -54,7 +54,7 @@ export default function SpritzReader({
     if (settings.fontSize !== displayedFontSize) {
       setDisplayedFontSize(settings.fontSize);
     }
-  }, [settings.fontSize]);
+  }, [settings.fontSize, displayedFontSize]);
 
   // Calculate micro-pause-adjusted delay
   useEffect(() => {
