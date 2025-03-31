@@ -6,6 +6,7 @@ import { useAppSelector } from '@/redux/hooks';
 import SpritzReader from '@/components/reader/SpritzReader';
 import FocusMode from '@/components/reader/FocusMode';
 import BackgroundGradient from '@/components/BackgroundGradient';
+import MouseGridBackground from '@/components/MouseGridBackground';
 
 export default function Home() {
   const { focusModeActive } = useAppSelector(state => state.settings);
@@ -14,6 +15,7 @@ export default function Home() {
     <>
       {focusModeActive && <FocusMode />}
       <BackgroundGradient />
+      <MouseGridBackground />
       <motion.main
         className="min-h-screen py-6 px-4"
         initial={{ opacity: 0 }}

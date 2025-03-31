@@ -30,7 +30,7 @@ export default function BackgroundGradient() {
   }, [colorScheme, resolvedTheme, customThemeColors?.dark, customThemeColors?.light]); // Updated dependencies
 
   return (
-    <div className="fixed top-0 left-0 z-[-2] h-full w-full bg-background" style={{
+    <div className="fixed top-0 left-0 z-[-3] h-full w-full bg-background" style={{
       backgroundImage: `radial-gradient(ellipse 80% 80% at 50% 120%, ${gradientColor}, rgba(255,255,255,0))`
     }}></div>
   );
