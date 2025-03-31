@@ -3,6 +3,7 @@
 exports[`WordDisplay > handles empty word parts gracefully 1`] = `
 <div
   class="rounded-lg border text-card-foreground shadow-sm h-20 bg-background"
+  data-testid="word-display-card"
 >
   <div
     class="h-full flex items-center justify-center p-2"
@@ -19,6 +20,7 @@ exports[`WordDisplay > handles empty word parts gracefully 1`] = `
 exports[`WordDisplay > handles null currentWord gracefully 1`] = `
 <div
   class="rounded-lg border text-card-foreground shadow-sm h-20 bg-background"
+  data-testid="word-display-card"
 >
   <div
     class="h-full flex items-center justify-center p-2"
