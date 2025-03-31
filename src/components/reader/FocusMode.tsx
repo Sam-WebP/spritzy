@@ -5,7 +5,7 @@ import { calculateMaxCharacters, calculateOptimalFontSize } from '@/utils/text-u
 import { useTheme } from "next-themes";
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { toggleFocusMode, updateNumericSetting } from '@/redux/slices/settingsSlice';
-import { startReading, pauseReading, setCurrentWordIndex, setWpm, setWordsAtTime } from '@/redux/slices/readerSlice';
+import { startReading, pauseReading, setCurrentWordIndex, setWpm, setWordsAtTime, resetReading } from '@/redux/slices/readerSlice';
 import { Button } from "@/components/ui/button";
 import { X, Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -347,7 +347,7 @@ export default function FocusMode() {
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                dispatch(setCurrentWordIndex(0));
+                dispatch(resetReading());
               }}
               variant="ghost"
               size="sm"
