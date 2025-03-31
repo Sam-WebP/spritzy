@@ -25,14 +25,14 @@ export default function QuizGenerator() {
     dispatch(setError(null));
 
     try {
-      const numQuestions = generationOptions?.questionTypes?.aiGenerateCount 
-        ? undefined 
+      const numQuestions = generationOptions?.questionTypes?.aiGenerateCount
+        ? undefined
         : generationOptions?.numQuestions || quizSettings.defaultNumQuestions;
-      
+
       const quiz = await generateQuiz(
-        text, 
+        text,
         numQuestions,
-        quizSettings.apiKey, 
+        quizSettings.apiKey,
         quizSettings.selectedModel,
         generationOptions?.questionTypes || quizSettings.defaultMode
       );
@@ -58,9 +58,9 @@ export default function QuizGenerator() {
             <BookOpen className="h-5 w-5 mr-2" />
             Quiz on Current Text
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => dispatch(toggleOptionsDialog())}
           >
             <Settings className="h-4 w-4" />
@@ -71,7 +71,7 @@ export default function QuizGenerator() {
         <p className="text-sm text-muted-foreground">
           Generate a quiz based on the current text in the reader.
         </p>
-        
+
         {!quizSettings.apiKey && (
           <p className="text-amber-500 text-sm">
             No API key set. You can add your OpenRouter API key in the Settings under the Quiz tab.
@@ -83,6 +83,7 @@ export default function QuizGenerator() {
           className="w-full"
           onClick={handleGenerateQuiz}
           disabled={!text.trim() || isGenerating}
+          data-testid="generate-quiz-dialog-button"
         >
           {isGenerating ? 'Generating...' : 'Generate Quiz'}
         </Button>

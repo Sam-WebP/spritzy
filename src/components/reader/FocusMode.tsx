@@ -16,66 +16,66 @@ export default function FocusMode() {
   const { currentWordIndex, words, isPlaying, currentWord, wordsAtTime, wpm } = useAppSelector((state) => state.reader);
   const { autoHideFocusControls, focusModeFont, focusModeFontSize, focusModeLetterSpacing, showFocusLetter, showFocusBorder } = useAppSelector(state => state.settings);
   const { resolvedTheme } = useTheme();
-  
+
   // Container ref to check click targets
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // State to track if controls should be visible
   const [showControls, setShowControls] = useState(true);
   const [lastMouseMove, setLastMouseMove] = useState(Date.now());
   const [cooldownActive, setCooldownActive] = useState(false);
-  
+
   // Calculate progress percentage - fix to reach 100% at the end
-  const percentage = words.length <= 1 
-    ? (currentWordIndex > 0 ? 100 : 0) 
+  const percentage = words.length <= 1
+    ? (currentWordIndex > 0 ? 100 : 0)
     : (currentWordIndex / (words.length - 1)) * 100;
-  
+
   // Background color based on theme
   const bgColor = resolvedTheme === 'dark' ? "bg-black" : "bg-white";
   const textColor = resolvedTheme === 'dark' ? "text-white" : "text-black";
-  
+
   const [dynamicFontSize, setDynamicFontSize] = useState(focusModeFontSize);
 
 
   // Add this effect to recalculate font size when word changes
-useEffect(() => {
-  // Get current screen width
-  const screenWidth = window.innerWidth;
-  
-  // Calculate max characters that can fit
-  const maxChars = calculateMaxCharacters(
-    focusModeFontSize,
-    focusModeLetterSpacing,
-    screenWidth
-  );
-  
-  // Calculate optimal font size for current word
-  const newFontSize = calculateOptimalFontSize(
-    currentWord.before.length,
-    currentWord.after.length,
-    maxChars,
-    focusModeFontSize
-  );
-  
-  // Update dynamic font size
-  setDynamicFontSize(newFontSize);
-  
-  // Also recalculate on window resize
-  const handleResize = () => {
-    const width = window.innerWidth;
-    const chars = calculateMaxCharacters(focusModeFontSize, focusModeLetterSpacing, width);
-    setDynamicFontSize(calculateOptimalFontSize(
-      currentWord.before.length, 
-      currentWord.after.length, 
-      chars, 
+  useEffect(() => {
+    // Get current screen width
+    const screenWidth = window.innerWidth;
+
+    // Calculate max characters that can fit
+    const maxChars = calculateMaxCharacters(
+      focusModeFontSize,
+      focusModeLetterSpacing,
+      screenWidth
+    );
+
+    // Calculate optimal font size for current word
+    const newFontSize = calculateOptimalFontSize(
+      currentWord.before.length,
+      currentWord.after.length,
+      maxChars,
       focusModeFontSize
-    ));
-  };
-  
-  window.addEventListener('resize', handleResize);
-  return () => window.removeEventListener('resize', handleResize);
-  
-}, [currentWord, focusModeFontSize, focusModeLetterSpacing]);
+    );
+
+    // Update dynamic font size
+    setDynamicFontSize(newFontSize);
+
+    // Also recalculate on window resize
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const chars = calculateMaxCharacters(focusModeFontSize, focusModeLetterSpacing, width);
+      setDynamicFontSize(calculateOptimalFontSize(
+        currentWord.before.length,
+        currentWord.after.length,
+        chars,
+        focusModeFontSize
+      ));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+
+  }, [currentWord, focusModeFontSize, focusModeLetterSpacing]);
 
   // Toggle play/pause
   const togglePlayPause = () => {
@@ -83,12 +83,12 @@ useEffect(() => {
       dispatch(pauseReading());
     } else {
       dispatch(startReading());
-      
+
       // When starting to play, activate cooldown and show controls briefly
       if (autoHideFocusControls) {
         setShowControls(true);
         setCooldownActive(true);
-        
+
         // Hide controls after 1 second
         setTimeout(() => {
           setShowControls(false);
@@ -98,28 +98,28 @@ useEffect(() => {
       }
     }
   };
-  
+
   // Handle clicks on the container
   const handleContainerClick = (e: React.MouseEvent) => {
     // Skip if clicking on a button or other interactive element
     const target = e.target as HTMLElement;
-    const isButton = target.tagName === 'BUTTON' || 
-                    target.closest('button') || 
-                    target.closest('[role="button"]') ||
-                    target.closest('.relative'); // Skip seek bar
+    const isButton = target.tagName === 'BUTTON' ||
+      target.closest('button') ||
+      target.closest('[role="button"]') ||
+      target.closest('.relative'); // Skip seek bar
 
     if (!isButton) {
       togglePlayPause();
     }
   };
-  
+
   // Auto-hide controls effect - separate from initial playback
   useEffect(() => {
     // If not playing, not using auto-hide, or in cooldown, do nothing
     if (!isPlaying || !autoHideFocusControls || cooldownActive) {
       return;
     }
-    
+
     // Only check for inactivity if controls are showing
     if (showControls) {
       const checkMouseInactive = () => {
@@ -128,12 +128,12 @@ useEffect(() => {
           setShowControls(false);
         }
       };
-      
+
       const interval = setInterval(checkMouseInactive, 500);
       return () => clearInterval(interval);
     }
   }, [isPlaying, showControls, lastMouseMove, autoHideFocusControls, cooldownActive]);
-  
+
   // When play state changes, handle visibility
   useEffect(() => {
     // When stopping, always show controls
@@ -142,7 +142,7 @@ useEffect(() => {
       setCooldownActive(false);
     }
   }, [isPlaying]);
-  
+
   // Show controls on mouse movement (only if auto-hide is enabled and not in cooldown)
   const handleMouseMove = () => {
     if (autoHideFocusControls && !cooldownActive) {
@@ -152,7 +152,7 @@ useEffect(() => {
       }
     }
   };
-  
+
   // Handle key press (ESC to exit, Space to toggle play/pause)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -168,82 +168,89 @@ useEffect(() => {
         }
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyPress);
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, [dispatch, isPlaying]);
-  
+
   // Handle seek bar interaction
   const handleSeekBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const position = (e.clientX - rect.left) / rect.width;
     const newIndex = Math.floor(position * words.length);
     dispatch(setCurrentWordIndex(Math.max(0, Math.min(newIndex, words.length - 1))));
-    
+
     // Prevent the click from bubbling to the container
     e.stopPropagation();
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={cn(
-        "fixed inset-0 z-50", 
+        "fixed inset-0 z-50",
         bgColor
       )}
       onMouseMove={handleMouseMove}
       onClick={handleContainerClick}
+      data-testid="focus-mode-container"
     >
       {/* Header controls with editable settings */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed top-0 left-0 w-full p-4 bg-background/80 backdrop-blur-sm transition-opacity z-10">
           <div className="max-w-3xl mx-auto flex flex-row justify-between items-center">
             <div className="flex flex-wrap justify-start gap-2 sm:gap-3">
-              <NumberControl
-                label="WPM"
-                value={wpm}
-                onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
-                onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
-                min={100}
-                max={1000}
-                className="text-xs sm:text-sm"
-              />
-              
-              <NumberControl
-                label={<>
-                  <span className="hidden sm:inline">Words at a time</span>
-                  <span className="inline sm:hidden">Words</span>
-                </>}
-                value={wordsAtTime}
-                onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
-                onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
-                min={1}
-                max={5}
-                className="text-xs sm:text-sm"
-              />
-              
-              <NumberControl
-                label={<>
-                  <span className="hidden sm:inline">Font Size</span>
-                  <span className="inline sm:hidden">Size</span>
-                </>}
-                value={focusModeFontSize}
-                onIncrement={() => dispatch(updateNumericSetting({
-                  setting: 'focusModeFontSize',
-                  value: Math.min(focusModeFontSize + 2, 72)
-                }))}
-                onDecrement={() => dispatch(updateNumericSetting({
-                  setting: 'focusModeFontSize',
-                  value: Math.max(focusModeFontSize - 2, 16)
-                }))}
-                min={16}
-                max={72}
-                className="text-xs sm:text-sm"
-              />
+              <div data-testid="focus-wpm-control">
+                <NumberControl
+                  label="WPM"
+                  value={wpm}
+                  onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
+                  onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
+                  min={100}
+                  max={1000}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              <div data-testid="focus-words-control">
+                <NumberControl
+                  label={<>
+                    <span className="hidden sm:inline">Words at a time</span>
+                    <span className="inline sm:hidden">Words</span>
+                  </>}
+                  value={wordsAtTime}
+                  onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
+                  onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
+                  min={1}
+                  max={5}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+
+              <div data-testid="focus-size-control">
+                <NumberControl
+                  label={<>
+                    <span className="hidden sm:inline">Font Size</span>
+                    <span className="inline sm:hidden">Size</span>
+                  </>}
+                  value={focusModeFontSize}
+                  onIncrement={() => dispatch(updateNumericSetting({
+                    setting: 'focusModeFontSize',
+                    value: Math.min(focusModeFontSize + 2, 72)
+                  }))}
+                  onDecrement={() => dispatch(updateNumericSetting({
+                    setting: 'focusModeFontSize',
+                    value: Math.max(focusModeFontSize - 2, 16)
+                  }))}
+                  min={16}
+                  max={72}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -252,6 +259,7 @@ useEffect(() => {
                 dispatch(toggleFocusMode());
               }}
               aria-label="Exit Focus Mode"
+              data-testid="exit-focus-mode-button"
             >
               <X className="h-4 w-4" />
               <span className="ml-2 hidden sm:inline">Exit Focus Mode</span>
@@ -263,19 +271,19 @@ useEffect(() => {
       {/* Word display in the center */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl px-4">
         <div className="relative flex justify-center items-center h-20">
-          <div 
+          <div
             className={cn(
-              focusModeFont.className, 
+              focusModeFont.className,
               textColor,
               "grid grid-cols-[1fr_auto_1fr] w-full items-baseline"
             )}
-            style={{ 
-              fontSize: `${dynamicFontSize}px`, 
+            style={{
+              fontSize: `${dynamicFontSize}px`,
               letterSpacing: `${focusModeLetterSpacing}px`,
             }}
           >
             <div className="text-right pr-1">{currentWord.before}</div>
-            <div 
+            <div
               className={cn(
                 "text-center",
                 { "text-primary": showFocusLetter },
@@ -288,28 +296,28 @@ useEffect(() => {
           </div>
         </div>
       </div>
-      
+
       {/* Bottom controls with thinner progress bar */}
       {(showControls || !autoHideFocusControls) && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-4 space-y-4">
           {/* Thinner seek bar */}
-          <div 
+          <div
             className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden cursor-pointer"
             onClick={handleSeekBarClick}
           >
-            <div 
-              className="h-full bg-primary" 
+            <div
+              className="h-full bg-primary"
               style={{ width: `${percentage}%` }}
             />
           </div>
-          
+
           <div className="text-xs text-center mt-1 text-muted-foreground">
             Word {currentWordIndex + 1}-{Math.min(currentWordIndex + wordsAtTime, words.length)}/{words.length}
           </div>
-          
+
           <div className="flex justify-center gap-4">
             {!isPlaying ? (
-              <Button 
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   dispatch(startReading());
@@ -317,11 +325,12 @@ useEffect(() => {
                 variant="ghost"
                 size="sm"
                 aria-label="Start reading"
+                data-testid="focus-play-button"
               >
                 <Play className="h-4 w-4 mr-2" /> Start
               </Button>
             ) : (
-              <Button 
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   dispatch(pauseReading());
@@ -329,12 +338,13 @@ useEffect(() => {
                 variant="ghost"
                 size="sm"
                 aria-label="Pause reading"
+                data-testid="focus-pause-button"
               >
                 <Pause className="h-4 w-4 mr-2" /> Pause
               </Button>
             )}
 
-            <Button 
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(setCurrentWordIndex(0));
@@ -342,6 +352,7 @@ useEffect(() => {
               variant="ghost"
               size="sm"
               aria-label="Reset reading"
+              data-testid="focus-reset-button"
             >
               <RotateCcw className="h-4 w-4 mr-2" /> Reset
             </Button>

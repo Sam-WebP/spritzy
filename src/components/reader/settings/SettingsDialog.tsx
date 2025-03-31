@@ -27,22 +27,25 @@ export default function SettingsDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           aria-label="Settings"
         >
           <Settings className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-hidden">
+      <DialogContent
+        className="sm:max-w-[600px] w-[95vw] max-h-[90vh] overflow-hidden"
+        data-testid="settings-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Reader Settings</DialogTitle>
           <DialogDescription>
             Customize the reading experience to your preferences.
           </DialogDescription>
         </DialogHeader>
-        
+
         <Tabs defaultValue="display" className="mt-2">
           <TabsList className="flex w-full h-auto flex-wrap">
             <TabsTrigger value="display" className="flex-1 py-1 px-2">Display</TabsTrigger>
@@ -50,7 +53,7 @@ export default function SettingsDialog() {
             <TabsTrigger value="quiz" className="flex-1 py-1 px-2">Quiz</TabsTrigger>
             <TabsTrigger value="advanced" className="flex-1 py-1 px-2">Advanced</TabsTrigger>
           </TabsList>
-          
+
           <ScrollArea className="h-[calc(90vh-220px)] mt-4">
             <div className="py-4 pr-4 pb-8">
               <TabsContent value="display" className="mt-0">
@@ -71,10 +74,11 @@ export default function SettingsDialog() {
         </Tabs>
 
         <DialogFooter className="mt-2 pt-2 border-t">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => dispatch(resetSettings())}
+            data-testid="reset-settings-button"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Reset to Defaults

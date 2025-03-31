@@ -119,50 +119,57 @@ export default function SpritzReader({
               size="icon"
               onClick={() => dispatch(toggleFocusMode())}
               aria-label="Focus Mode"
+              data-testid="focus-mode-button"
             >
               <Maximize className="h-4 w-4" />
             </Button>
             <ThemeToggle />
-            <SettingsDialog />
+            <SettingsDialog data-testid="settings-button" />
           </div>
 
           {/* Middle row - Centered controls */}
           <div className="flex justify-center">
-            <NumberControl
-              label="WPM"
-              value={wpm}
-              onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
-              onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
-              min={100}
-              max={1000}
-              className="text-xs sm:text-sm"
-            />
+            <div data-testid="wpm-control">
+              <NumberControl
+                label="WPM"
+                value={wpm}
+                onIncrement={() => dispatch(setWpm(Math.min(wpm + 10, 1000)))}
+                onDecrement={() => dispatch(setWpm(Math.max(wpm - 10, 100)))}
+                min={100}
+                max={1000}
+                className="text-xs sm:text-sm"
+              />
+            </div>
 
-            <NumberControl
-              label={"Words"}
-              value={wordsAtTime}
-              onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
-              onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
-              min={1}
-              max={5}
-              className="text-xs sm:text-sm"
-            />
+            <div data-testid="words-control">
+              <NumberControl
+                label={"Words"}
+                value={wordsAtTime}
+                onIncrement={() => dispatch(setWordsAtTime(Math.min(wordsAtTime + 1, 5)))}
+                onDecrement={() => dispatch(setWordsAtTime(Math.max(wordsAtTime - 1, 1)))}
+                min={1}
+                max={5}
+                className="text-xs sm:text-sm"
+              />
+            </div>
 
-            <NumberControl
-              label={"Size"}
-              value={displayedFontSize}
-              onIncrement={() => dispatch(updateNumericSetting({
-                setting: 'fontSize',
-                value: Math.min(settings.fontSize + 1, 48)
-              }))}
-              onDecrement={() => dispatch(updateNumericSetting({
-                setting: 'fontSize',
-                value: Math.max(settings.fontSize - 1, 12)
-              }))}
-              min={12}
-              max={48}
-              className="text-xs sm:text-sm"
-            />
+            <div data-testid="size-control">
+              <NumberControl
+                label={"Size"}
+                value={displayedFontSize}
+                onIncrement={() => dispatch(updateNumericSetting({
+                  setting: 'fontSize',
+                  value: Math.min(settings.fontSize + 1, 48)
+                }))}
+                onDecrement={() => dispatch(updateNumericSetting({
+                  setting: 'fontSize',
+                  value: Math.max(settings.fontSize - 1, 12)
+                }))}
+                min={12}
+                max={48}
+                className="text-xs sm:text-sm"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -19,7 +19,7 @@ export default function WordDisplay() {
 
   if (!currentWord) {
     return (
-      <Card className="h-20 bg-background">
+      <Card className="h-20 bg-background" data-testid="word-display-card">
         <CardContent className="h-full flex items-center justify-center p-2" />
       </Card>
     );
@@ -28,12 +28,13 @@ export default function WordDisplay() {
   const { before = '', pivot = '', after = '' } = currentWord;
 
   return (
-    <Card className="h-20 bg-background">
+    <Card className="h-20 bg-background" data-testid="word-display-card">
       <CardContent className="h-full flex items-center justify-center p-2">
         {before === '' && pivot === '' && after === '' ? (
           <div className="w-full" aria-live="assertive" aria-atomic="true" />
         ) : (
           <div
+            data-testid="word-display"
             className={cn(
               settings.font.className,
               "grid grid-cols-[1fr_auto_1fr] items-baseline w-full"

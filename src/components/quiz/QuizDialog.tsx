@@ -10,7 +10,7 @@ import QuizOptions from './QuizOptions';
 export default function QuizDialog() {
   const dispatch = useAppDispatch();
   const { showQuizDialog } = useAppSelector(state => state.quiz);
-  
+
   const handleClose = () => {
     dispatch(toggleQuizDialog());
     dispatch(resetQuiz());
@@ -19,7 +19,10 @@ export default function QuizDialog() {
   return (
     <>
       <Dialog open={showQuizDialog} onOpenChange={handleClose}>
-        <DialogContent className="max-w-[800px] w-[95vw] h-[90vh] flex flex-col">
+        <DialogContent
+          className="max-w-[800px] w-[95vw] h-[90vh] flex flex-col"
+          data-testid="quiz-dialog"
+        >
           <DialogTitle>Quiz</DialogTitle>
           <DialogDescription>
             Test your understanding of the text with these questions.
