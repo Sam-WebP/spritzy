@@ -36,7 +36,7 @@ interface QuizState {
 // Default quiz settings used if none are found in local storage
 const defaultQuizSettings: QuizSettings = {
   apiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || '',
-  selectedModel: 'openai/gpt-3.5-turbo', // A common default model
+  selectedModel: 'google/gemini-2.0-flash-001', 
   defaultNumQuestions: 5,
   defaultMode: {
     multipleChoice: true,
