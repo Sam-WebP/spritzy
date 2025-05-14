@@ -35,7 +35,7 @@ interface QuizState {
 
 // Default quiz settings used if none are found in local storage
 const defaultQuizSettings: QuizSettings = {
-  apiKey: '',
+  apiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || '',
   selectedModel: 'openai/gpt-3.5-turbo', // A common default model
   defaultNumQuestions: 5,
   defaultMode: {
