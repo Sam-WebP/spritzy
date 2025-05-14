@@ -46,7 +46,7 @@ export default function QuizResults() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto py-6">
       <Card>
         <CardHeader>
           <CardTitle>Quiz Results</CardTitle>
