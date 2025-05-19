@@ -47,7 +47,7 @@ Follow these steps to set up and run the Spritzy project locally:
 1.  **Clone the Repository:**
 
     ```bash
-    git clone https://github.com/your-username/spritzy.git # Replace with actual repo URL
+    git clone https://github.com/your-username/spritzy.git
     cd spritzy
     ```
 
